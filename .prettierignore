@@ -1,0 +1,9 @@
+node_modules
+dist
+.expo
+android
+ios
+package-lock.json
+.env
+*.md
+src/uniwind-types.d.ts

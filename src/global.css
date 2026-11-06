@@ -1,0 +1,88 @@
+@import "tailwindcss";
+@import "uniwind";
+
+/* =========================================================
+   LibraryHub design system: "warm editorial" (same tokens as
+   the website's src/index.css). Light and dark values switch
+   with the theme; use them as bg-canvas, text-fg, border-line…
+   Use logical utilities (ms-/me-, ps-/pe-, start-/end-) so
+   layouts mirror for Urdu (RTL).
+   ========================================================= */
+
+@layer theme {
+  :root {
+    @variant light {
+      /* surfaces */
+      --color-canvas: #fbf8f3; /* page: warm paper */
+      --color-surface: #ffffff; /* cards, sheets */
+      --color-sunken: #f3eee6; /* inputs, wells */
+      --color-line: #e7e0d5;
+      --color-line-strong: #d5cbbd;
+
+      /* text */
+      --color-fg: #1f1a14;
+      --color-fg-muted: #5e554a;
+      --color-fg-subtle: #6f665a;
+
+      /* brand: deep ink green; accent: bookbinding gold */
+      --color-brand: #1f5c4a;
+      --color-brand-hover: #184a3b;
+      --color-brand-soft: #e3efe9;
+      --color-on-brand: #ffffff;
+      --color-gold: #8f5d12;
+      --color-gold-soft: #f7ecd9;
+
+      /* status */
+      --color-success: #287045;
+      --color-success-soft: #e4f2e9;
+      --color-warning: #94560a;
+      --color-warning-soft: #fbefdc;
+      --color-danger: #b4372f;
+      --color-danger-soft: #f9e4e1;
+      --color-info: #2b5f8f;
+      --color-info-soft: #e3edf6;
+    }
+
+    @variant dark {
+      --color-canvas: #14110e;
+      --color-surface: #1c1814;
+      --color-sunken: #100e0b;
+      --color-line: #2e2822;
+      --color-line-strong: #40382f;
+
+      --color-fg: #f3ede4;
+      --color-fg-muted: #b9ae9f;
+      --color-fg-subtle: #9b9184;
+
+      --color-brand: #6fb89e;
+      --color-brand-hover: #86c7b0;
+      --color-brand-soft: #1d2f28;
+      --color-on-brand: #0f1f19;
+      --color-gold: #e0a85a;
+      --color-gold-soft: #33281a;
+
+      --color-success: #6cc08f;
+      --color-success-soft: #1a2c21;
+      --color-warning: #e5a54f;
+      --color-warning-soft: #33271a;
+      --color-danger: #ef8a80;
+      --color-danger-soft: #3a1f1c;
+      --color-info: #7fb2e0;
+      --color-info-soft: #1b2733;
+    }
+  }
+}
+
+@theme {
+  /* Loaded with expo-font in src/app/_layout.jsx. On Android each weight is
+     its own font file, so weights are families (font-sans-semibold), not
+     font-semibold. */
+  --font-serif: "Fraunces_600SemiBold";
+  --font-serif-bold: "Fraunces_700Bold";
+  --font-sans: "Inter_400Regular";
+  --font-sans-medium: "Inter_500Medium";
+  --font-sans-semibold: "Inter_600SemiBold";
+  --font-sans-bold: "Inter_700Bold";
+
+  --radius-card: 14px;
+}

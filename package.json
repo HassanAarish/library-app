@@ -1,0 +1,82 @@
+{
+  "name": "library-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "LibraryHub Android app: browse the catalogue, read rented books, follow book requests and get notifications. Built with Expo and React Native.",
+  "keywords": [
+    "libraryhub",
+    "book-rental",
+    "ebook-reader",
+    "library",
+    "pakistan",
+    "react-native",
+    "expo",
+    "expo-router",
+    "android",
+    "mobile-app"
+  ],
+  "homepage": "https://github.com/HassanAarish/library-app#readme",
+  "bugs": {
+    "url": "https://github.com/HassanAarish/library-app/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HassanAarish/library-app.git"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "author": {
+    "name": "Aarish",
+    "url": "https://github.com/HassanAarish"
+  },
+  "main": "expo-router/entry",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "web": "expo start --web",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "jest",
+    "doctor": "expo-doctor"
+  },
+  "dependencies": {
+    "@expo-google-fonts/fraunces": "^0.4.1",
+    "@expo-google-fonts/inter": "^0.4.2",
+    "@tanstack/react-query": "^5.106.1",
+    "axios": "^1.21.0",
+    "expo": "~58.0.23",
+    "expo-constants": "~58.0.15",
+    "expo-dev-client": "~58.0.18",
+    "expo-font": "~58.0.11",
+    "expo-linking": "~58.0.16",
+    "expo-router": "~58.0.30",
+    "expo-secure-store": "~58.0.2",
+    "expo-splash-screen": "~58.0.13",
+    "expo-status-bar": "~58.0.4",
+    "expo-system-ui": "~58.0.7",
+    "lucide-react-native": "^1.70.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-native": "0.88.1",
+    "react-native-safe-area-context": "~5.11.1",
+    "react-native-screens": "~4.30.1",
+    "react-native-svg": "15.16.0",
+    "react-native-web": "^0.21.4",
+    "socket.io-client": "^4.8.4",
+    "tailwindcss": "^4.3.4",
+    "uniwind": "^1.13.2"
+  },
+  "devDependencies": {
+    "@testing-library/react-native": "^14.1.0",
+    "eslint": "^9.39.5",
+    "eslint-config-expo": "^58.0.4",
+    "eslint-plugin-better-tailwindcss": "^4.10.0",
+    "jest": "^30.5.2",
+    "jest-expo": "^58.0.14",
+    "prettier": "^3.9.10"
+  }
+}

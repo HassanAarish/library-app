@@ -1,0 +1,33 @@
+/*
+ * For ESLint only (eslint-plugin-better-tailwindcss), never loaded by the app.
+ * Uniwind defines the colour tokens per theme inside `@layer theme` in
+ * global.css; plain Tailwind (which the lint plugin uses) can't see those, so
+ * this file declares the same names. Values here don't matter.
+ * Keep the list in step with global.css when adding a token.
+ */
+@import "./global.css";
+
+@theme {
+  --color-canvas: #000;
+  --color-surface: #000;
+  --color-sunken: #000;
+  --color-line: #000;
+  --color-line-strong: #000;
+  --color-fg: #000;
+  --color-fg-muted: #000;
+  --color-fg-subtle: #000;
+  --color-brand: #000;
+  --color-brand-hover: #000;
+  --color-brand-soft: #000;
+  --color-on-brand: #000;
+  --color-gold: #000;
+  --color-gold-soft: #000;
+  --color-success: #000;
+  --color-success-soft: #000;
+  --color-warning: #000;
+  --color-warning-soft: #000;
+  --color-danger: #000;
+  --color-danger-soft: #000;
+  --color-info: #000;
+  --color-info-soft: #000;
+}
