@@ -43,6 +43,7 @@ const Navigator = () => {
       <StatusBar style={isDark ? "light" : "dark"} />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: canvas } }}>
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="books/[bookId]" />
         {/* Guests only: signing in removes these screens and returns to the tabs. */}
         <Stack.Protected guard={!isAuthenticated}>
           <Stack.Screen name="(auth)" />

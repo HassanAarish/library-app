@@ -1,10 +1,7 @@
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
-import { ArrowLeft } from "lucide-react-native";
 import { withUniwind } from "uniwind";
-import { useI18n } from "@/i18n";
-import { Icon, Logo, Text } from "@/ui";
+import { BackButton, Icon, Logo, Text } from "@/ui";
 
 const StyledSafeArea = withUniwind(SafeAreaView);
 
@@ -13,7 +10,6 @@ const StyledSafeArea = withUniwind(SafeAreaView);
  * scrolling content that stays above the keyboard.
  */
 const AuthScreen = ({ title, subtitle, icon, children, footer }) => {
-  const { t } = useI18n();
   return (
     <StyledSafeArea edges={["top", "bottom"]} className="flex-1 bg-canvas">
       <KeyboardAvoidingView
@@ -24,16 +20,7 @@ const AuthScreen = ({ title, subtitle, icon, children, footer }) => {
           contentContainerClassName="grow px-4 pb-8 pt-2"
           keyboardShouldPersistTaps="handled"
         >
-          <Pressable
-            onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))}
-            accessibilityRole="button"
-            accessibilityLabel={t("common.back")}
-            className="-ms-2 mb-4 size-11 items-center justify-center"
-          >
-            <View className="rtl:rotate-180">
-              <Icon as={ArrowLeft} />
-            </View>
-          </Pressable>
+          <BackButton className="mb-4" />
 
           {icon ? (
             <View className="mb-5 size-12 items-center justify-center rounded-full bg-brand-soft">

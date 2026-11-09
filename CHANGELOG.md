@@ -12,6 +12,8 @@ The version shown in the app comes from `package.json`.
   Facebook (with account linking), two-step verification and forgot password.
 - Account tab shows the signed-in profile, with sign out. Guests get a Sign in button.
 - A saved session that can't reach the server offers a retry instead of signing out.
+- Catalogue (phase M2): Home shelf of new arrivals; Books tab with search, category
+  and language filters, sorting and endless scrolling; book pages with live availability.
 
 ## [0.1.0] - not yet released
 

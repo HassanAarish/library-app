@@ -883,6 +883,8 @@ const en = {
       title: "Read the books you love, wherever you are.",
       subtitle:
         "Your rentals open right here in the app. Browse the catalogue, see when a book is free, and follow the books you've asked for.",
+      browse: "Browse the catalogue",
+      seeAll: "See all",
     },
     signInPrompt: {
       title: "Sign in to see your library",
@@ -897,6 +899,15 @@ const en = {
       signOutBody: "You can sign back in at any time.",
       preferencesOnWebsite: "Edit your profile, password and two-step verification on the website.",
       openWebsite: "Open the website",
+    },
+    book: {
+      readOnlyNote: "Books open here in the app and can't be downloaded.",
+    },
+    availability: {
+      notConfirmed: "Not confirmed yet",
+      rentalLength: "One reader at a time, {days} days each.",
+      openLibrary: "Go to my library",
+      signIn: "Sign in to see your place in line",
     },
     comingSoon: "This screen arrives in {phase}.",
     settings: {

@@ -6,7 +6,7 @@ requests and get notifications. It talks to the same Express API as the
 website (`../library-backend`) and reuses the website's design and code
 (`../library-frontend`).
 
-> **Status:** M0 (foundation) and M1 (sign-in) done. **Next:** M2 catalogue →
+> **Status:** M0 (foundation), M1 (sign-in) and M2 (catalogue) done. **Next:**
 > M3 library & reader → M4 requests, inbox & push → M5 polish → M6 Play Store release.
 
 ## ⚠️ Google Play rule: the app is for reading, not buying
@@ -20,6 +20,16 @@ LibraryHub's rentals are paid on the **website** (Easypaisa), so the app:
 
 `src/i18n/i18n.test.jsx` fails if the app-only text (`mobile.*`) mentions
 paying. Renting or Google Play Billing can be added later as its own decision.
+
+## 📖 Catalogue (M2)
+
+| Screen | Route | What it does |
+|--------|-------|--------------|
+| Home | `/` | Welcome and a shelf of the newest books |
+| Books | `/books` | Search, category and language filters, sort (newest, oldest, title), endless two-column list, pull to refresh. Open to guests |
+| Book | `/books/:id` | Cover, details and live availability: free now, or rented until when, who's ahead, your own booking |
+
+Under the Google Play rule these screens show **no prices, price sorts or rent buttons**. Payment states appear as "Not confirmed yet". `books.test.jsx` checks this.
 
 ## 🔐 Sign-in (M1)
 
