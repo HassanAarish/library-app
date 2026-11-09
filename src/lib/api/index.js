@@ -69,6 +69,7 @@ export const rentals = {
   availability: (bookId) => unwrap(http.get(`/rental/availability/${bookId}`)),
   mine: (params) => unwrap(http.get("/rental/mine", { params: cleanParams(params) })),
   get: (rentalId) => unwrap(http.get(`/rental/${rentalId}`)),
+  cancel: (rentalId) => unwrapWithMessage(http.post(`/rental/${rentalId}/cancel`)),
   extend: (rentalId) => unwrapWithMessage(http.post(`/rental/${rentalId}/extend`)),
   returnEarly: (rentalId) => unwrapWithMessage(http.post(`/rental/${rentalId}/return`)),
   startNow: (rentalId) => unwrapWithMessage(http.post(`/rental/${rentalId}/start-now`)),

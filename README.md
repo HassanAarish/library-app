@@ -6,8 +6,8 @@ requests and get notifications. It talks to the same Express API as the
 website (`../library-backend`) and reuses the website's design and code
 (`../library-frontend`).
 
-> **Status:** M0 (foundation), M1 (sign-in) and M2 (catalogue) done. **Next:**
-> M3 library & reader → M4 requests, inbox & push → M5 polish → M6 Play Store release.
+> **Status:** M0 (foundation), M1 (sign-in), M2 (catalogue), and M3 (library & reader) done. **Next:**
+> M4 requests, inbox & push → M5 polish → M6 Play Store release.
 
 ## ⚠️ Google Play rule: the app is for reading, not buying
 
@@ -30,6 +30,15 @@ paying. Renting or Google Play Billing can be added later as its own decision.
 | Book | `/books/:id` | Cover, details and live availability: free now, or rented until when, who's ahead, your own booking |
 
 Under the Google Play rule these screens show **no prices, price sorts or rent buttons**. Payment states appear as "Not confirmed yet". `books.test.jsx` checks this.
+
+## 📚 Library & Reader (M3)
+
+| Screen | Route | What it does |
+|--------|-------|--------------|
+| Library | `/library` | Rentals segmented into Reading now, Upcoming, and History. Reading cards include live countdowns, 7-day extend, early return, and "Read" actions. Guests see a Sign in prompt |
+| Reader | `/read/:id` | Full-screen page reader streaming watermarked pages (`cachePolicy="memory"`), screenshot blocking (`expo-screen-capture`), reading position memory, zoom, and jump-to-page navigation |
+
+Under the Google Play rule, unpaid bookings are marked "Not confirmed yet" without payment links.
 
 ## 🔐 Sign-in (M1)
 

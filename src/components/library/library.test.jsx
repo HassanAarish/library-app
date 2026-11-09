@@ -1,0 +1,242 @@
+import { cleanup, render, renderHook, screen, waitFor } from "@testing-library/react-native";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import * as ScreenCapture from "expo-screen-capture";
+import { I18nProvider } from "@/i18n";
+import { reader, rentals } from "@/lib/api";
+import { useCountdown } from "@/hooks/useCountdown";
+import LibraryScreen from "@/app/(tabs)/library";
+import ReaderScreen from "@/app/read/[bookId]";
+
+let mockAuth = { status: "authenticated", isAuthenticated: true, user: { _id: "u1" } };
+const mockShow = jest.fn();
+
+jest.mock("expo-router", () => ({
+  router: { push: jest.fn(), navigate: jest.fn(), back: jest.fn(), replace: jest.fn() },
+  useLocalSearchParams: () => ({ bookId: "b1" }),
+}));
+jest.mock("react-native-safe-area-context", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return {
+    SafeAreaProvider: ({ children }) => React.createElement(View, null, children),
+    SafeAreaView: ({ children }) => React.createElement(View, null, children),
+    useSafeAreaInsets: () => ({ top: 40, bottom: 20, left: 0, right: 0 }),
+  };
+});
+jest.mock("expo-screen-capture", () => ({
+  preventScreenCaptureAsync: jest.fn().mockResolvedValue(undefined),
+  allowScreenCaptureAsync: jest.fn().mockResolvedValue(undefined),
+}));
+jest.mock("expo-secure-store", () => ({
+  getItemAsync: jest.fn().mockResolvedValue(null),
+  setItemAsync: jest.fn().mockResolvedValue(undefined),
+}));
+jest.mock("expo-image", () => ({
+  Image: Object.assign(() => null, { prefetch: jest.fn().mockResolvedValue(true) }),
+}));
+jest.mock(
+  "lucide-react-native",
+  () => new Proxy({ __esModule: true }, { get: (t, k) => (k in t ? t[k] : () => null) }),
+);
+jest.mock("uniwind", () => ({
+  useCSSVariable: (v) => (Array.isArray(v) ? v.map(() => "#000") : "#000"),
+  withUniwind: (C) => C,
+}));
+jest.mock("@/context/AuthContext", () => ({ useAuth: () => mockAuth }));
+jest.mock("@/ui/Toast", () => ({
+  useToast: () => ({ show: mockShow }),
+  ToastProvider: ({ children }) => children,
+}));
+jest.mock("@/lib/api", () => ({
+  rentals: {
+    mine: jest.fn(),
+    extend: jest.fn(),
+    returnEarly: jest.fn(),
+    cancel: jest.fn(),
+    startNow: jest.fn(),
+  },
+  reader: {
+    open: jest.fn(),
+    pageSource: jest.fn((bookId, page) => ({
+      uri: `https://api.libraryhub.pk/reader/${bookId}/pages/${page}`,
+      headers: { Authorization: "Bearer token" },
+    })),
+  },
+}));
+
+const show = (ui) =>
+  render(
+    <QueryClientProvider
+      client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } })}
+    >
+      <I18nProvider>{ui}</I18nProvider>
+    </QueryClientProvider>,
+  );
+
+const extractText = (node) => {
+  if (!node) return "";
+  if (typeof node === "string") return node;
+  if (Array.isArray(node)) return node.map(extractText).join(" ");
+  if (node.children) return extractText(node.children);
+  return "";
+};
+
+const expectNoPaymentWords = () => {
+  const text = extractText(screen.toJSON());
+  expect(text).not.toMatch(/Rs |\bprice\b|\bpay\b|Rent now|Book from|easypaisa/i);
+};
+
+afterEach(() => {
+  cleanup();
+});
+
+describe("useCountdown", () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date("2026-11-10T12:00:00Z"));
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  test("returns null when no end date is provided", async () => {
+    const { result } = await renderHook(() => useCountdown(null));
+    expect(result.current).toBeNull();
+  });
+
+  test("formats minutes and seconds under an hour", async () => {
+    const future = "2026-11-10T12:15:30Z";
+    const { result } = await renderHook(() => useCountdown(future));
+    expect(result.current.text).toBe("15:30");
+    expect(result.current.done).toBe(false);
+  });
+
+  test("formats hours and minutes under 24 hours", async () => {
+    const future = "2026-11-10T15:10:00Z";
+    const { result } = await renderHook(() => useCountdown(future));
+    expect(result.current.text).toBe("3h 10m");
+    expect(result.current.done).toBe(false);
+  });
+
+  test("formats days and hours over 24 hours", async () => {
+    const future = "2026-11-12T17:00:00Z";
+    const { result } = await renderHook(() => useCountdown(future));
+    expect(result.current.text).toBe("2d 5h");
+    expect(result.current.done).toBe(false);
+  });
+});
+
+describe("LibraryScreen (M3)", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test("shows sign-in prompt when unauthenticated", async () => {
+    mockAuth = { status: "guest", isAuthenticated: false };
+    await show(<LibraryScreen />);
+    expect(screen.getByText("Sign in to see your library")).toBeTruthy();
+  });
+
+  test("shows reading empty state when signed in with no rentals", async () => {
+    mockAuth = { status: "authenticated", isAuthenticated: true, user: { _id: "u1" } };
+    rentals.mine.mockResolvedValue({ results: [] });
+    await show(<LibraryScreen />);
+    await waitFor(() => {
+      expect(screen.getByText("You're not reading anything right now.")).toBeTruthy();
+    });
+    expectNoPaymentWords();
+  });
+
+  test("displays active reading rentals with Read, Extend, and Return buttons", async () => {
+    mockAuth = { status: "authenticated", isAuthenticated: true, user: { _id: "u1" } };
+    const now = new Date();
+    const activeRental = {
+      _id: "r1",
+      status: "active",
+      startDate: new Date(now.getTime() - 2 * 3600 * 1000).toISOString(),
+      endDate: new Date(now.getTime() + 12 * 24 * 3600 * 1000).toISOString(),
+      extended: false,
+      bookId: {
+        _id: "b1",
+        title: "Clean Architecture",
+        author: "Robert C. Martin",
+        coverImage: { url: "https://example.com/cover.jpg" },
+      },
+    };
+    rentals.mine.mockResolvedValue({ results: [activeRental] });
+    await show(<LibraryScreen />);
+
+    await waitFor(() => {
+      expect(screen.getAllByText("Clean Architecture").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("Robert C. Martin").length).toBeGreaterThan(0);
+    });
+
+    expect(screen.getByText("Read")).toBeTruthy();
+    expect(screen.getByText("Extend 7 days")).toBeTruthy();
+    expect(screen.getByText("Return")).toBeTruthy();
+    expectNoPaymentWords();
+  });
+
+  test("unpaid/review bookings show 'Not confirmed yet' and no payment actions", async () => {
+    mockAuth = { status: "authenticated", isAuthenticated: true, user: { _id: "u1" } };
+    const upcomingUnpaid = {
+      _id: "r2",
+      status: "pending_payment",
+      startDate: "2026-12-01T10:00:00Z",
+      endDate: "2026-12-15T10:00:00Z",
+      bookId: {
+        _id: "b2",
+        title: "Refactoring",
+        author: "Martin Fowler",
+      },
+    };
+    rentals.mine.mockResolvedValue({ results: [upcomingUnpaid] });
+    await show(<LibraryScreen />);
+
+    // Switch tab to upcoming
+    await waitFor(() => {
+      expect(screen.getByText(/Upcoming/)).toBeTruthy();
+    });
+    expectNoPaymentWords();
+  });
+});
+
+describe("ReaderScreen (M3)", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test("prevents screen capture on mount and allows it on unmount", async () => {
+    reader.open.mockResolvedValue({
+      bookId: "b1",
+      title: "Clean Code",
+      author: "Robert C. Martin",
+      pageCount: 150,
+      accessUntil: "2026-12-01T10:00:00Z",
+    });
+
+    const rendered = await show(<ReaderScreen />);
+    expect(ScreenCapture.preventScreenCaptureAsync).toHaveBeenCalled();
+
+    await waitFor(() => {
+      expect(screen.getByText("Clean Code")).toBeTruthy();
+    });
+
+    rendered.unmount();
+    await waitFor(() => {
+      expect(ScreenCapture.allowScreenCaptureAsync).toHaveBeenCalled();
+    });
+  });
+
+  test("shows access denied empty state on 403 error", async () => {
+    const error = Object.assign(new Error("Rent this book to start reading."), { status: 403 });
+    reader.open.mockRejectedValue(error);
+
+    await show(<ReaderScreen />);
+    await waitFor(() => {
+      expect(screen.getByText("You can't read this book right now")).toBeTruthy();
+    });
+    expect(screen.getByText("Go to my library")).toBeTruthy();
+  });
+});

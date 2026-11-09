@@ -8,6 +8,7 @@ The version shown in the app comes from `package.json`.
 ## [Unreleased]
 
 ### Added
+- My library & protected reader (phase M3): Library tab grouping rentals into Reading now, Upcoming and History with live countdowns, 7-day extension and early return. Full-screen page reader (/read/[bookId]) streaming watermarked pages with memory-only caching, screenshot blocking (expo-screen-capture), reading position memory, zoom and jump-to-page navigation.
 - Sign-in (phase M1): email and password, sign-up with an emailed code, Google,
   Facebook (with account linking), two-step verification and forgot password.
 - Account tab shows the signed-in profile, with sign out. Guests get a Sign in button.
