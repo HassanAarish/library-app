@@ -12,6 +12,8 @@ const { version } = require("./package.json");
 const CANVAS_LIGHT = "#fbf8f3";
 const CANVAS_DARK = "#14110e";
 const BRAND = "#1f5c4a";
+const FACEBOOK_APP_ID = process.env.EXPO_PUBLIC_FACEBOOK_APP_ID;
+const FACEBOOK_CLIENT_TOKEN = process.env.FACEBOOK_CLIENT_TOKEN;
 
 module.exports = () => ({
   name: "LibraryHub",
@@ -51,5 +53,24 @@ module.exports = () => ({
         dark: { image: "./assets/splash-icon.png", backgroundColor: CANVAS_DARK },
       },
     ],
+    // The plugin requires iosUrlScheme; the app is Android-only for now.
+    [
+      "@react-native-google-signin/google-signin",
+      { iosUrlScheme: "com.googleusercontent.apps.android-only" },
+    ],
+    // Only when configured: the Facebook plugin fails without its ids.
+    ...(FACEBOOK_APP_ID && FACEBOOK_CLIENT_TOKEN
+      ? [
+          [
+            "react-native-fbsdk-next",
+            {
+              appID: FACEBOOK_APP_ID,
+              clientToken: FACEBOOK_CLIENT_TOKEN,
+              displayName: "LibraryHub",
+              scheme: `fb${FACEBOOK_APP_ID}`,
+            },
+          ],
+        ]
+      : []),
   ],
 });

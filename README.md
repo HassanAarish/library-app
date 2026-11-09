@@ -6,7 +6,7 @@ requests and get notifications. It talks to the same Express API as the
 website (`../library-backend`) and reuses the website's design and code
 (`../library-frontend`).
 
-> **Status:** M0 (foundation) done. **Next:** M1 sign-in → M2 catalogue →
+> **Status:** M0 (foundation) and M1 (sign-in) done. **Next:** M2 catalogue →
 > M3 library & reader → M4 requests, inbox & push → M5 polish → M6 Play Store release.
 
 ## ⚠️ Google Play rule: the app is for reading, not buying
@@ -20,6 +20,32 @@ LibraryHub's rentals are paid on the **website** (Easypaisa), so the app:
 
 `src/i18n/i18n.test.jsx` fails if the app-only text (`mobile.*`) mentions
 paying. Renting or Google Play Billing can be added later as its own decision.
+
+## 🔐 Sign-in (M1)
+
+| Screen | Route | What it does |
+|--------|-------|--------------|
+| Sign in | `/login` | Email + password, Google, Facebook. Unverified accounts go to the code step; accounts with two-step verification go to its code step |
+| Create account | `/signup` | Name, email, password; then the emailed code |
+| Email code | `/verify-otp` | 6-digit code, resend with a 60-second cooldown |
+| Two-step code | `/two-factor` | Authenticator code after the first step |
+| Forgot password | `/forgot-password` | Sends the reset email; its link opens the **website**, where the new password is set |
+| Account tab | `/account` | Name, email, photo, sign out. Editing the profile, password and two-step setup stay on the website for now |
+
+`(auth)` screens are for guests only (`Stack.Protected`): signing in removes them and returns to the tabs. Guests can browse; Library and Account offer **Sign in**. Sessions last 30 days (the backend's `ACCESS_TOKEN_EXPIRATION`).
+
+### Setting up Google and Facebook
+Social sign-in only works in a development or release build, not Expo Go. No backend changes are needed.
+
+**Google** ([Cloud Console](https://console.cloud.google.com/apis/credentials), same project as the website):
+1. Create an OAuth client of type **Android** with package `pk.libraryhub.app` and the app's **SHA-1**. Get it with `npx eas-cli@latest credentials -p android`. Once on Google Play, also add the SHA-1 from Play Console › App signing.
+2. Set `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` to the existing **web** client id (not the Android one).
+
+**Facebook** ([developers.facebook.com](https://developers.facebook.com/apps), same app as the website):
+1. Add the **Android** platform with package `pk.libraryhub.app`, default activity `pk.libraryhub.app.MainActivity` and add the key hash (the SHA-1 in base64).
+2. Copy the client token from App settings › Advanced into `FACEBOOK_CLIENT_TOKEN`, and set `EXPO_PUBLIC_FACEBOOK_APP_ID`.
+
+`.env` isn't uploaded to Expo's build servers. Add these values there too: `npx eas-cli@latest env:create`, or expo.dev › project › Environment variables. Rebuild after changing them.
 
 ## 🧰 Tech stack
 
@@ -43,6 +69,7 @@ library-app/
 ├── src/
 │   ├── app/                  screens (Expo Router)
 │   │   ├── _layout.jsx       fonts, splash, providers
+│   │   ├── (auth)/           guests only: login, signup, verify-otp, forgot-password, two-factor
 │   │   ├── (tabs)/           bottom tabs: index (Home), books, library, requests, account
 │   │   └── +not-found.jsx    unknown deep link
 │   ├── ui/                   design system, import from "@/ui": Text, Button, Icon, Logo,
@@ -90,6 +117,8 @@ anyone with the app can read them, so no secrets.
 | `EXPO_PUBLIC_API_URL` | Backend. **Leave empty in development**: the app uses the backend on the computer running `npm start` (port 5001), via its network address, so a real phone on the same Wi-Fi reaches it |
 | `EXPO_PUBLIC_SOCKET_URL` | Only if sockets live elsewhere |
 | `EXPO_PUBLIC_SITE_URL` | The website (legal pages, help). Links to it are hidden when empty |
+| `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | Google sign-in: the **web** client id, the same value as the backend's `GOOGLE_CLIENT_ID`. Empty hides the button |
+| `EXPO_PUBLIC_FACEBOOK_APP_ID`, `FACEBOOK_CLIENT_TOKEN` | Facebook sign-in (same app as the website). Both are needed when the app is built |
 | `ANDROID_PACKAGE` | Defaults to `pk.libraryhub.app`. **Permanent once published**, so confirm it before the first Play upload |
 
 The backend's CORS settings don't matter for the app (native apps don't send an Origin).

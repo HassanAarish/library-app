@@ -30,7 +30,7 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
  * SafeArea → ReactQuery → I18n → Theme → Toast → Auth → Socket → screens
  */
 const Navigator = () => {
-  const { status } = useAuth();
+  const { status, isAuthenticated } = useAuth();
   const { isDark } = useTheme();
   const canvas = useCSSVariable("--color-canvas");
 
@@ -43,6 +43,10 @@ const Navigator = () => {
       <StatusBar style={isDark ? "light" : "dark"} />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: canvas } }}>
         <Stack.Screen name="(tabs)" />
+        {/* Guests only: signing in removes these screens and returns to the tabs. */}
+        <Stack.Protected guard={!isAuthenticated}>
+          <Stack.Screen name="(auth)" />
+        </Stack.Protected>
         <Stack.Screen name="+not-found" />
       </Stack>
     </>

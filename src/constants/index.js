@@ -20,7 +20,14 @@ export const socketURL = (process.env.EXPO_PUBLIC_SOCKET_URL || baseURL).replace
 // The website, for things the app sends people to (legal pages, account
 // deletion, renting; payments stay on the web, see README). No guessed
 // default: links to the website are hidden until it's set.
-export const siteURL = (process.env.EXPO_PUBLIC_SITE_URL || "").replace(/\/$/, "");
+const site = process.env.EXPO_PUBLIC_SITE_URL || "";
+// The .env.example placeholder (https://<your-domain>) counts as not set.
+export const siteURL = /^https?:\/\/[^<\s]+$/.test(site) ? site.replace(/\/$/, "") : "";
+
+// Public social sign-in identifiers. The Google one is the WEB client id, the
+// same value as the backend's GOOGLE_CLIENT_ID. Empty hides the button.
+export const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || "";
+export const FACEBOOK_APP_ID = process.env.EXPO_PUBLIC_FACEBOOK_APP_ID || "";
 
 // Where the access token is kept (expo-secure-store key).
 export const TOKEN_KEY = "token";

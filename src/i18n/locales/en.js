@@ -888,6 +888,16 @@ const en = {
       title: "Sign in to see your library",
       body: "Your rentals, requests and notifications appear here once you've signed in.",
     },
+    auth: {
+      continueWithGoogle: "Continue with Google",
+      signupSubtitle: "Join to read your books and follow book requests.",
+    },
+    account: {
+      signOutTitle: "Sign out?",
+      signOutBody: "You can sign back in at any time.",
+      preferencesOnWebsite: "Edit your profile, password and two-step verification on the website.",
+      openWebsite: "Open the website",
+    },
     comingSoon: "This screen arrives in {phase}.",
     settings: {
       title: "Settings",

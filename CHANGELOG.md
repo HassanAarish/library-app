@@ -7,6 +7,12 @@ The version shown in the app comes from `package.json`.
 
 ## [Unreleased]
 
+### Added
+- Sign-in (phase M1): email and password, sign-up with an emailed code, Google,
+  Facebook (with account linking), two-step verification and forgot password.
+- Account tab shows the signed-in profile, with sign out. Guests get a Sign in button.
+- A saved session that can't reach the server offers a retry instead of signing out.
+
 ## [0.1.0] - not yet released
 
 The app's foundation (phase M0).
