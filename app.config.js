@@ -14,6 +14,12 @@ const CANVAS_DARK = "#14110e";
 const BRAND = "#1f5c4a";
 const FACEBOOK_APP_ID = process.env.EXPO_PUBLIC_FACEBOOK_APP_ID;
 const FACEBOOK_CLIENT_TOKEN = process.env.FACEBOOK_CLIENT_TOKEN;
+// Firebase config (Android push). Kept out of git: EAS builds get it from the
+// GOOGLE_SERVICES_JSON file variable, local builds from ./google-services.json.
+// Optional, so Expo Go and the browser preview work without it.
+const GOOGLE_SERVICES_FILE =
+  process.env.GOOGLE_SERVICES_JSON ||
+  (require("fs").existsSync("./google-services.json") ? "./google-services.json" : undefined);
 
 module.exports = () => ({
   name: "LibraryHub",
@@ -27,8 +33,15 @@ module.exports = () => ({
   orientation: "portrait",
   userInterfaceStyle: "automatic", // follow the phone's light/dark setting
   icon: "./assets/icon.png",
+  // Expo account and project (from `eas init`). Builds and push notifications
+  // use them. The project id is public: it ships inside the app.
+  owner: "horror_98",
+  extra: {
+    eas: { projectId: "127ab7eb-f5a3-4085-8830-ba15cff95c31" },
+  },
   android: {
     package: process.env.ANDROID_PACKAGE || "pk.libraryhub.app",
+    ...(GOOGLE_SERVICES_FILE ? { googleServicesFile: GOOGLE_SERVICES_FILE } : {}),
     adaptiveIcon: {
       backgroundColor: BRAND,
       foregroundImage: "./assets/android-icon-foreground.png",
@@ -43,6 +56,15 @@ module.exports = () => ({
     "expo-router",
     "expo-font",
     "expo-secure-store",
+    // Push notifications (Android tray icon must be white on transparent).
+    [
+      "expo-notifications",
+      {
+        icon: "./assets/android-icon-monochrome.png",
+        color: BRAND,
+        defaultChannel: "default",
+      },
+    ],
     [
       "expo-splash-screen",
       {

@@ -947,6 +947,9 @@ const en = {
       releasedBody: "This booking wasn't confirmed in time, so its dates were released.",
       adminTitle: "Something to review",
       adminBody: "Open the admin console on the website.",
+      addedBody: "The book you asked for has been added. Find it in the catalogue.",
+      genericTitle: "LibraryHub",
+      genericBody: "You have a new update.",
     },
     comingSoon: "This screen arrives in {phase}.",
     settings: {

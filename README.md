@@ -6,8 +6,8 @@ requests and get notifications. It talks to the same Express API as the
 website (`../library-backend`) and reuses the website's design and code
 (`../library-frontend`).
 
-> **Status:** M0 (foundation), M1 (sign-in), M2 (catalogue), M3 (library & reader) and M4 part 1
-> (requests & inbox) done. **Next:** M4 part 2, push notifications → M5 polish → M6 Play Store release.
+> **Status:** M0 (foundation), M1 (sign-in), M2 (catalogue), M3 (library & reader) and M4
+> (requests, inbox & push) done. **Next:** M5 polish → M6 Play Store release.
 
 ## ⚠️ Google Play rule: the app is for reading, not buying
 
@@ -51,6 +51,14 @@ Under the Google Play rule, unpaid bookings are marked "Not confirmed yet" witho
 Notification text comes from the backend, which mentions payments for the website.
 `lib/notificationText.js` gives payment-related types the app's own wording (the live
 pop-up too), and `lib/notificationLink.js` only opens app screens.
+
+**Push notifications** (`expo-notifications`): after sign-in the app asks once for
+permission and registers the phone with the backend (`POST /notification/devices`);
+sign-out removes it. Tapping a push marks it read and opens the same screen as in the
+inbox, also when the tap starts the app. While the app is open the live pop-up shows
+the notification, so no system banner is added. Push text is written by the backend
+with the same app-safe wording. Push needs a **development build** on a real Android
+phone: it doesn't work in Expo Go or the browser preview, where it quietly does nothing.
 
 ## 🔐 Sign-in (M1)
 
@@ -151,6 +159,14 @@ anyone with the app can read them, so no secrets.
 | `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | Google sign-in: the **web** client id, the same value as the backend's `GOOGLE_CLIENT_ID`. Empty hides the button |
 | `EXPO_PUBLIC_FACEBOOK_APP_ID`, `FACEBOOK_CLIENT_TOKEN` | Facebook sign-in (same app as the website). Both are needed when the app is built |
 | `ANDROID_PACKAGE` | Defaults to `pk.libraryhub.app`. **Permanent once published**, so confirm it before the first Play upload |
+
+**Firebase (push on Android).** `google-services.json` (from the Firebase project's
+Android app) goes in this folder for local builds; git ignores it. Cloud builds read it
+from an EAS file variable instead: on expo.dev, open the project's **Environment
+variables**, add `GOOGLE_SERVICES_JSON` as a **File**, visibility **Secret**, for every
+environment. The Firebase service-account key that delivers pushes is uploaded to Expo
+once with `eas credentials` (Android › Push Notifications: FCM V1) and is never kept
+in the project.
 
 The backend's CORS settings don't matter for the app (native apps don't send an Origin).
 

@@ -3,7 +3,7 @@ import { notificationLink } from "./notificationLink";
 import { notificationText } from "./notificationText";
 
 const t = (key) => key.split(".").reduce((node, part) => node?.[part], en) ?? key;
-const PAYMENT = /\bpay|paid\b|payment|price|\bRs\b|easypaisa|refund|\bbuy|purchase/i;
+const PAYMENT = /\bpay|paid\b|payment|price|\bRs\b|easypaisa|refund|\bbuy|purchase|\brent\b/i;
 
 // What the backend sends for each type (see its services and cron jobs).
 const SERVER = {
@@ -15,6 +15,11 @@ const SERVER = {
   "rental.hold_expired": ["Booking released", "The payment wasn't sent within 30 minutes."],
   "rental.started": ["Your book is ready to read", "Happy reading!"],
   "book_request.updated": ["Update on your book request", "It's coming soon."],
+  "book_request.fulfilled": [
+    "“Sapiens” is now in the library",
+    "The book you asked for, “Sapiens”, has been added. You can rent it now from the catalogue.",
+  ],
+  "rental.ended": ["Rental ended", "Pay Rs 50 to keep reading."],
 };
 
 describe("notification wording (Google Play rule)", () => {
@@ -36,6 +41,17 @@ describe("notification wording (Google Play rule)", () => {
   test("other types keep the backend's words", () => {
     const n = { type: "rental.started", title: "Your book is ready to read", message: "Enjoy" };
     expect(notificationText(t, n)).toEqual({ title: n.title, message: "Enjoy" });
+  });
+
+  test("a book that was added keeps its title but not 'rent it now'", () => {
+    const [title, message] = SERVER["book_request.fulfilled"];
+    const shown = notificationText(t, { type: "book_request.fulfilled", title, message });
+    expect(shown).toEqual({ title, message: t("mobile.notify.addedBody") });
+  });
+
+  test("'Rental' in a title is not mistaken for 'rent'", () => {
+    const n = { type: "rental.ended", title: "Rental ended", message: "Hope you enjoyed it" };
+    expect(notificationText(t, n).title).toBe("Rental ended");
   });
 });
 

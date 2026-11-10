@@ -20,6 +20,7 @@ import { watchAppFocus } from "@/lib/appFocus";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 import { SocketProvider } from "@/realtime/SocketProvider";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { ToastProvider } from "@/ui";
 
 // Keep the splash screen up until fonts and the saved session are ready.
@@ -33,6 +34,7 @@ const Navigator = () => {
   const { status, isAuthenticated } = useAuth();
   const { isDark } = useTheme();
   const canvas = useCSSVariable("--color-canvas");
+  usePushNotifications();
 
   useEffect(() => {
     if (status !== "loading") SplashScreen.hideAsync().catch(() => {});

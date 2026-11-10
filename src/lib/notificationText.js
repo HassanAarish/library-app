@@ -28,7 +28,20 @@ export const notificationText = (t, n) => {
     case "payment.submitted":
     case "refund.requested":
       return { title: t("mobile.notify.adminTitle"), message: t("mobile.notify.adminBody") };
+    case "book_request.fulfilled":
+      // The backend's message says "You can rent it now".
+      return safe(t, { title: n?.title ?? "", message: t("mobile.notify.addedBody") });
     default:
-      return { title: n?.title ?? "", message: n?.message ?? "" };
+      return safe(t, { title: n?.title ?? "", message: n?.message ?? "" });
   }
 };
+
+// Matches the backend's push filter (services/Push.Service.js).
+const PAYMENT_WORDS =
+  /\bpay|paid\b|payment|price|\bRs\.?\s?\d|easypaisa|refund|\bbuy|purchase|rent it|to rent\b|rent now|\brent\b/i;
+
+/** Safety net: server text that mentions paying or renting gets neutral words. */
+const safe = (t, text) =>
+  PAYMENT_WORDS.test(text.title) || PAYMENT_WORDS.test(text.message)
+    ? { title: t("mobile.notify.genericTitle"), message: t("mobile.notify.genericBody") }
+    : text;

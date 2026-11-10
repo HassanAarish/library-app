@@ -8,6 +8,11 @@ The version shown in the app comes from `package.json`.
 ## [Unreleased]
 
 ### Added
+- Push notifications (phase M4, part 2): the app asks for permission after sign-in,
+  registers the phone with the backend and removes it on sign-out; tapping a push
+  marks it read and opens the matching screen, including when it starts the app.
+  Needs a development build (not Expo Go). Adds `expo-notifications`: run
+  `npm install` after pulling.
 - Requests & inbox (phase M4, part 1): Requests tab with search, open/added filter,
   most wanted or newest, follow, request a book with Open Library suggestions, suggest
   a category, and "Mine" (my requests and suggestions); request pages with their
@@ -17,6 +22,8 @@ The version shown in the app comes from `package.json`.
 - My library & protected reader (phase M3): Library tab grouping rentals into Reading now, Upcoming and History with live countdowns, 7-day extension and early return. Full-screen page reader (/read/[bookId]) streaming watermarked pages with memory-only caching, screenshot blocking (expo-screen-capture), reading position memory, zoom and jump-to-page navigation.
 
 ### Fixed
+- Inbox: "book added" notifications no longer say "You can rent it now"; server text
+  that mentions paying or renting is replaced with neutral wording.
 - Reader: the next page is preloaded in memory only (it was also being saved to disk);
   page images now get a real size; Retry reloads a failed page; each page is
   requested once; tapping the page shows or hides the controls.

@@ -110,4 +110,7 @@ export const notifications = {
   markRead: (ids) => unwrap(http.patch("/notification/read", { ids })),
   markAllRead: () => unwrap(http.patch("/notification/read-all")),
   remove: (notificationId) => unwrap(http.delete(`/notification/${notificationId}`)),
+  // Phone push notifications (mobile app only)
+  registerDevice: (body) => unwrap(http.post("/notification/devices", body)),
+  unregisterDevice: (token) => unwrap(http.delete("/notification/devices", { data: { token } })),
 };
