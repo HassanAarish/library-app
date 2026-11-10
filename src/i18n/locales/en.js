@@ -909,6 +909,24 @@ const en = {
       openLibrary: "Go to my library",
       signIn: "Sign in to see your place in line",
     },
+    library: {
+      confirmCancel: "This frees the dates for other readers.",
+      notConfirmedReason: "Booking wasn't confirmed",
+      tabReading: "Reading",
+    },
+    reader: {
+      noAccessBody: "Books open here during your rental period. Check your library for your dates.",
+      toggleControls: "Show or hide the reading controls",
+      pageRange: "Choose a page from 1 to {total}.",
+      endedTitle: "Your reading time has ended",
+      endedBody:
+        "This rental is over, so the book has closed. Your library shows what you can read now.",
+    },
+    countdown: {
+      daysHours: "{days}d {hours}h",
+      hoursMinutes: "{hours}h {minutes}m",
+      minutesSeconds: "{minutes}:{seconds}",
+    },
     comingSoon: "This screen arrives in {phase}.",
     settings: {
       title: "Settings",

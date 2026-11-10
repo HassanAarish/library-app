@@ -9,6 +9,17 @@ The version shown in the app comes from `package.json`.
 
 ### Added
 - My library & protected reader (phase M3): Library tab grouping rentals into Reading now, Upcoming and History with live countdowns, 7-day extension and early return. Full-screen page reader (/read/[bookId]) streaming watermarked pages with memory-only caching, screenshot blocking (expo-screen-capture), reading position memory, zoom and jump-to-page navigation.
+
+### Fixed
+- Reader: the next page is preloaded in memory only (it was also being saved to disk);
+  page images now get a real size; Retry reloads a failed page; each page is
+  requested once; tapping the page shows or hides the controls.
+- Library and reader no longer show payment wording (Google Play rule); a new test
+  checks the text every screen uses.
+- Reader: when a rental ends mid-book it says the reading time has ended (a brief
+  network error keeps the book open); the saved page is no longer overwritten with
+  page 1 on opening, and saved pages are cleared when a rental ends or you sign out.
+- Library: countdowns can be translated; tab labels fit on small phones.
 - Sign-in (phase M1): email and password, sign-up with an emailed code, Google,
   Facebook (with account linking), two-step verification and forgot password.
 - Account tab shows the signed-in profile, with sign out. Guests get a Sign in button.

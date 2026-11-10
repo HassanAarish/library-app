@@ -18,7 +18,7 @@ const Segmented = ({ value, onChange, options, label, className }) => (
           accessibilityRole="radio"
           accessibilityState={{ selected }}
           className={cn(
-            "min-h-10 flex-1 items-center justify-center rounded-lg px-3",
+            "min-h-10 flex-1 items-center justify-center rounded-lg px-1",
             selected && "bg-fg",
           )}
         >
@@ -26,6 +26,9 @@ const Segmented = ({ value, onChange, options, label, className }) => (
             variant="label"
             weight="medium"
             className={selected ? "text-canvas" : "text-fg-muted"}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.85}
           >
             {text}
           </Text>

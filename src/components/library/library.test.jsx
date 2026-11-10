@@ -1,9 +1,9 @@
-import { cleanup, render, renderHook, screen, waitFor } from "@testing-library/react-native";
+import { cleanup, render, renderHook, screen, waitFor, act } from "@testing-library/react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as ScreenCapture from "expo-screen-capture";
 import { I18nProvider } from "@/i18n";
 import { reader, rentals } from "@/lib/api";
-import { useCountdown } from "@/hooks/useCountdown";
+import { countdownText, useCountdown } from "@/hooks/useCountdown";
 import LibraryScreen from "@/app/(tabs)/library";
 import ReaderScreen from "@/app/read/[bookId]";
 
@@ -27,12 +27,20 @@ jest.mock("expo-screen-capture", () => ({
   preventScreenCaptureAsync: jest.fn().mockResolvedValue(undefined),
   allowScreenCaptureAsync: jest.fn().mockResolvedValue(undefined),
 }));
+const mockStore = new Map();
 jest.mock("expo-secure-store", () => ({
-  getItemAsync: jest.fn().mockResolvedValue(null),
-  setItemAsync: jest.fn().mockResolvedValue(undefined),
+  getItemAsync: jest.fn(async (k) => mockStore.get(k) ?? null),
+  setItemAsync: jest.fn(async (k, v) => void mockStore.set(k, v)),
+  deleteItemAsync: jest.fn(async (k) => void mockStore.delete(k)),
 }));
 jest.mock("expo-image", () => ({
-  Image: Object.assign(() => null, { prefetch: jest.fn().mockResolvedValue(true) }),
+  Image: Object.assign(
+    (props) => {
+      globalThis.lastPageImage = props;
+      return null;
+    },
+    { prefetch: jest.fn().mockResolvedValue(true) },
+  ),
 }));
 jest.mock(
   "lucide-react-native",
@@ -202,9 +210,62 @@ describe("LibraryScreen (M3)", () => {
   });
 });
 
+describe("countdown text", () => {
+  const t = (key, vars) =>
+    ({
+      "mobile.countdown.daysHours": `${vars?.days}d ${vars?.hours}h`,
+      "mobile.countdown.hoursMinutes": `${vars?.hours}h ${vars?.minutes}m`,
+      "mobile.countdown.minutesSeconds": `${vars?.minutes}:${vars?.seconds}`,
+    })[key];
+
+  test("goes through t() so it can be translated", () => {
+    expect(countdownText(t, { days: 4, hours: 12, totalHours: 108 })).toBe("4d 12h");
+    expect(countdownText(t, { days: 0, totalHours: 3, minutes: 5 })).toBe("3h 05m");
+    expect(countdownText(t, { days: 0, totalHours: 0, totalMinutes: 12, seconds: 4 })).toBe(
+      "12:04",
+    );
+    expect(countdownText(t, null)).toBe("");
+  });
+});
+
 describe("ReaderScreen (M3)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockStore.clear();
+  });
+
+  test("reopens at the saved page, and doesn't overwrite it with page 1 first", async () => {
+    const SecureStore = require("expo-secure-store");
+    mockStore.set("reader_page_b1", "37");
+    reader.open.mockResolvedValue({ title: "Clean Code", author: "R. Martin", pageCount: 150 });
+
+    await show(<ReaderScreen />);
+    await waitFor(() => expect(screen.getByText("Page 37 of 150")).toBeTruthy());
+    const writes = SecureStore.setItemAsync.mock.calls.filter(([k]) => k === "reader_page_b1");
+    expect(writes.map(([, v]) => v)).not.toContain("1");
+  });
+
+  test("when the rental ends mid-book, a failed page shows 'reading time has ended'", async () => {
+    mockStore.set("reader_page_b1", "5");
+    reader.open.mockResolvedValueOnce({ title: "Clean Code", author: "R. Martin", pageCount: 150 });
+    reader.open.mockRejectedValue(Object.assign(new Error("Forbidden"), { status: 403 }));
+
+    await show(<ReaderScreen />);
+    await waitFor(() => expect(screen.getByText("Page 5 of 150")).toBeTruthy());
+    await act(async () => globalThis.lastPageImage.onError());
+    await waitFor(() => expect(screen.getByText("Your reading time has ended")).toBeTruthy());
+    await waitFor(() => expect(mockStore.has("reader_page_b1")).toBe(false));
+  });
+
+  test("a failed page during a network blip keeps the book open", async () => {
+    reader.open.mockResolvedValueOnce({ title: "Clean Code", author: "R. Martin", pageCount: 150 });
+    reader.open.mockRejectedValue(Object.assign(new Error("Network"), { status: 0 }));
+
+    await show(<ReaderScreen />);
+    await waitFor(() => expect(screen.getByText("Clean Code")).toBeTruthy());
+    await act(async () => globalThis.lastPageImage.onError());
+    await waitFor(() => expect(screen.getByText("This page didn't load.")).toBeTruthy());
+    expect(screen.queryByText("Your reading time has ended")).toBeNull();
   });
 
   test("prevents screen capture on mount and allows it on unmount", async () => {
@@ -227,6 +288,18 @@ describe("ReaderScreen (M3)", () => {
     await waitFor(() => {
       expect(ScreenCapture.allowScreenCaptureAsync).toHaveBeenCalled();
     });
+  });
+
+  test("preloads only the next page, and only in memory (never on disk)", async () => {
+    const { Image } = require("expo-image");
+    reader.open.mockResolvedValue({ title: "Clean Code", author: "R. Martin", pageCount: 150 });
+
+    await show(<ReaderScreen />);
+    await waitFor(() => expect(Image.prefetch).toHaveBeenCalled());
+    for (const [, options] of Image.prefetch.mock.calls) {
+      expect(options).toMatchObject({ cachePolicy: "memory" });
+    }
+    expect(Image.prefetch.mock.calls.every(([uri]) => uri.endsWith("/pages/2"))).toBe(true);
   });
 
   test("shows access denied empty state on 403 error", async () => {

@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { user as userApi } from "@/lib/api";
 import { setUnauthorizedHandler } from "@/lib/http";
 import { clearSocialSessions } from "@/lib/socialAuth";
+import { readingPosition } from "@/lib/readingPosition";
 import { tokenStore } from "@/lib/tokenStore";
 
 /**
@@ -25,6 +26,8 @@ export const AuthProvider = ({ children }) => {
   const signOut = useCallback(async () => {
     await tokenStore.set(null);
     clearSocialSessions();
+    // Saved reading positions belong to this reader.
+    readingPosition.clearAll();
     // Drop every cached response that belonged to this user.
     queryClient.clear();
     setState(GUEST);

@@ -29,7 +29,7 @@ paying. Renting or Google Play Billing can be added later as its own decision.
 | Books | `/books` | Search, category and language filters, sort (newest, oldest, title), endless two-column list, pull to refresh. Open to guests |
 | Book | `/books/:id` | Cover, details and live availability: free now, or rented until when, who's ahead, your own booking |
 
-Under the Google Play rule these screens show **no prices, price sorts or rent buttons**. Payment states appear as "Not confirmed yet". `books.test.jsx` checks this.
+Under the Google Play rule these screens show **no prices, price sorts or rent buttons**. Payment states appear as "Not confirmed yet". `books.test.jsx` checks this, and `src/i18n/appText.test.js` checks the text every screen and component uses (website strings included).
 
 ## 📚 Library & Reader (M3)
 

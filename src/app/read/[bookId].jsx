@@ -1,32 +1,27 @@
-import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Modal, Platform, Pressable, ScrollView, View } from "react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Modal,
+  Pressable,
+  ScrollView,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { Image } from "expo-image";
 import * as ScreenCapture from "expo-screen-capture";
-import * as SecureStore from "expo-secure-store";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, Lock, Minus, Plus, ShieldAlert, X } from "lucide-react-native";
 import { useCSSVariable, withUniwind } from "uniwind";
 import { reader } from "@/lib/api";
+import { readingPosition } from "@/lib/readingPosition";
 import { useI18n } from "@/i18n";
 import { Button, EmptyState, Icon, Input, Loader, Text } from "@/ui";
 
 const StyledSafeArea = withUniwind(SafeAreaView);
 
 const ZOOM_LEVELS = [1, 1.25, 1.5];
-
-const readInitialPage = (bookId) => {
-  if (Platform.OS === "web") {
-    try {
-      const saved = Number(localStorage.getItem(`reader_page_${bookId}`));
-      if (saved >= 1) return saved;
-    } catch {
-      // ignore
-    }
-  }
-  return 1;
-};
 
 /**
  * /read/[bookId]: Full-screen page-by-page protected reader.
@@ -37,13 +32,22 @@ export default function ReaderScreen() {
   const { bookId } = useLocalSearchParams();
   const { t, dateTime } = useI18n();
   const insets = useSafeAreaInsets();
+  // The page's size comes from the screen (A-series paper, 1 : 1.414). Percent
+  // sizes inside a ScrollView have nothing to measure against and collapse to 0.
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const pageHeight = Math.min(screenHeight * 0.92, screenWidth * 1.414);
+  const pageWidth = pageHeight / 1.414;
   const brand = useCSSVariable("--color-brand");
 
-  const [page, setPage] = useState(() => readInitialPage(bookId));
+  const [page, setPage] = useState(1);
+  // Nothing is saved until the saved page has been read back, or page 1 would
+  // overwrite it on the first render.
+  const [restored, setRestored] = useState(false);
   const [zoomIndex, setZoomIndex] = useState(0);
   const [showControls, setShowControls] = useState(true);
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   const [showJumpModal, setShowJumpModal] = useState(false);
   const [jumpDraft, setJumpDraft] = useState("");
 
@@ -66,48 +70,42 @@ export default function ReaderScreen() {
   const totalPages = bookQuery.data?.pageCount ?? 0;
   const current = Math.min(Math.max(page, 1), totalPages || 1);
 
-  // Restore saved last-read page from SecureStore on native.
+  // Reopen at the page the reader left off.
   useEffect(() => {
-    if (Platform.OS === "web") return;
-    let isMounted = true;
-    const storeKey = `reader_page_${bookId}`;
-
-    SecureStore.getItemAsync(storeKey)
-      .then((saved) => {
-        if (saved && isMounted) {
-          const p = parseInt(saved, 10);
-          if (p >= 1) setPage(p);
-        }
-      })
-      .catch(() => {});
-
+    let active = true;
+    readingPosition.get(bookId).then((saved) => {
+      if (!active) return;
+      if (saved) setPage(saved);
+      setRestored(true);
+    });
     return () => {
-      isMounted = false;
+      active = false;
     };
   }, [bookId]);
 
-  // Persist current page.
   useEffect(() => {
-    if (current < 1) return;
-    const storeKey = `reader_page_${bookId}`;
-    if (Platform.OS === "web") {
-      try {
-        localStorage.setItem(storeKey, String(current));
-      } catch {
-        // ignore
-      }
-      return;
-    }
-    SecureStore.setItemAsync(storeKey, String(current)).catch(() => {});
-  }, [bookId, current]);
+    if (restored && totalPages) readingPosition.set(bookId, current);
+  }, [bookId, current, restored, totalPages]);
 
-  // Prefetch the next page in memory (single page ahead to respect server rate-limits).
+  // Access gone while reading (the rental ended): forget the saved page.
+  const accessEnded =
+    bookQuery.isError && bookQuery.error?.status === 403 && Boolean(bookQuery.data);
+  useEffect(() => {
+    if (accessEnded) readingPosition.clear(bookId);
+  }, [accessEnded, bookId]);
+
+  // Preload the next page, one ahead only (page requests count toward the
+  // server's rate limit). cachePolicy "memory" is required: prefetch defaults to
+  // memory AND disk, which would save watermarked pages to the phone.
   useEffect(() => {
     if (!bookQuery.isSuccess || current >= totalPages || imageError) return;
-    const next = current + 1;
-    const nextSource = reader.pageSource(bookId, next);
-    Image.prefetch(nextSource.uri, { headers: nextSource.headers }).catch(() => {});
+    const next = reader.pageSource(bookId, current + 1);
+    Image.prefetch(next.uri, { headers: next.headers, cachePolicy: "memory" }).catch(() => {});
   }, [bookId, bookQuery.isSuccess, current, totalPages, imageError]);
+
+  // One source object per page: a new object on every render makes the image
+  // reload (and re-request the page) whenever any state changes.
+  const pageSource = useMemo(() => reader.pageSource(bookId, current), [bookId, current]);
 
   const goToPage = useCallback(
     (target) => {
@@ -147,14 +145,22 @@ export default function ReaderScreen() {
     );
   }
 
-  if (bookQuery.isError) {
+  // A failed re-check (e.g. a network blip) keeps the book open; only a book that
+  // never opened, or whose access ended, shows this screen.
+  if (bookQuery.isError && (!bookQuery.data || accessEnded)) {
     const isForbidden = bookQuery.error?.status === 403;
     return (
       <StyledSafeArea edges={["top", "bottom"]} className="flex-1 bg-canvas justify-center px-4">
         <EmptyState
           icon={Lock}
-          title={t("reader.noAccessTitle")}
-          description={isForbidden ? t("reader.noAccessBody") : bookQuery.error?.message}
+          title={accessEnded ? t("mobile.reader.endedTitle") : t("reader.noAccessTitle")}
+          description={
+            accessEnded
+              ? t("mobile.reader.endedBody")
+              : isForbidden
+                ? t("mobile.reader.noAccessBody")
+                : bookQuery.error?.message
+          }
           action={t("mobile.availability.openLibrary")}
           onAction={() => router.replace("/(tabs)/library")}
         />
@@ -164,7 +170,6 @@ export default function ReaderScreen() {
 
   const bookData = bookQuery.data;
   const currentZoom = ZOOM_LEVELS[zoomIndex];
-  const pageSource = reader.pageSource(bookId, current);
 
   return (
     <View className="flex-1 bg-sunken">
@@ -223,12 +228,14 @@ export default function ReaderScreen() {
           showsVerticalScrollIndicator={false}
           centerContent
         >
-          <View
+          <Pressable
+            onPress={() => setShowControls((prev) => !prev)}
+            accessibilityRole="button"
+            accessibilityLabel={t("mobile.reader.toggleControls")}
             style={{
               transform: [{ scale: currentZoom }],
-              width: "100%",
-              aspectRatio: 1 / 1.414,
-              maxHeight: "92%",
+              width: pageWidth,
+              height: pageHeight,
             }}
             className="items-center justify-center"
           >
@@ -241,7 +248,11 @@ export default function ReaderScreen() {
                 <Button
                   variant="secondary"
                   size="sm"
-                  onPress={() => goToPage(current)}
+                  onPress={() => {
+                    // A new key remounts the image so it really asks for the page again.
+                    setAttempt((a) => a + 1);
+                    goToPage(current);
+                  }}
                   className="mt-4"
                 >
                   {t("common.retry")}
@@ -249,7 +260,7 @@ export default function ReaderScreen() {
               </View>
             ) : (
               <Image
-                key={`${bookId}-${current}`}
+                key={`${bookId}-${current}-${attempt}`}
                 source={pageSource}
                 cachePolicy="memory"
                 contentFit="contain"
@@ -262,6 +273,9 @@ export default function ReaderScreen() {
                 onError={() => {
                   setImageLoading(false);
                   setImageError(true);
+                  // A failed page can mean the rental just ended: if so, the
+                  // server now answers 403 and the "ended" screen shows.
+                  bookQuery.refetch();
                 }}
                 style={{ width: "100%", height: "100%" }}
               />
@@ -272,30 +286,23 @@ export default function ReaderScreen() {
                 <ActivityIndicator size="large" color={brand} />
               </View>
             ) : null}
-          </View>
+          </Pressable>
         </ScrollView>
 
-        {/* Touch zones: left 25% for previous, center 50% for controls toggle, right 25% for next */}
-        <View className="absolute inset-0 flex-row">
-          <Pressable
-            onPress={() => current > 1 && goToPage(current - 1)}
-            className="w-1/4 h-full"
-            accessibilityRole="button"
-            accessibilityLabel={t("reader.previous")}
-          />
-          <Pressable
-            onPress={() => setShowControls((prev) => !prev)}
-            className="w-2/4 h-full"
-            accessibilityRole="button"
-            accessibilityLabel={t("reader.fit")}
-          />
-          <Pressable
-            onPress={() => current < totalPages && goToPage(current + 1)}
-            className="w-1/4 h-full"
-            accessibilityRole="button"
-            accessibilityLabel={t("reader.next")}
-          />
-        </View>
+        {/* Side strips turn pages. They leave the middle free, so taps on the page
+            (show/hide controls), pinch-zoom and the Retry button still work. */}
+        <Pressable
+          onPress={() => current > 1 && goToPage(current - 1)}
+          className="absolute inset-y-0 inset-s-0 w-1/5"
+          accessibilityRole="button"
+          accessibilityLabel={t("reader.previous")}
+        />
+        <Pressable
+          onPress={() => current < totalPages && goToPage(current + 1)}
+          className="absolute inset-y-0 inset-e-0 w-1/5"
+          accessibilityRole="button"
+          accessibilityLabel={t("reader.next")}
+        />
       </View>
 
       {/* Bottom Navigation Controls */}
@@ -364,7 +371,7 @@ export default function ReaderScreen() {
               {t("reader.pageLabel")}
             </Text>
             <Text variant="caption" className="mb-3 text-fg-muted">
-              {t("common.pageOf", { page: `1 - ${totalPages}`, total: totalPages })}
+              {t("mobile.reader.pageRange", { total: totalPages })}
             </Text>
 
             <Input

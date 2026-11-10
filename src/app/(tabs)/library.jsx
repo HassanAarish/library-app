@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, Platform, Pressable, RefreshControl, ScrollView, View } from "react-native";
 import { router } from "expo-router";
 import { BookOpen, CalendarClock, Clock, History } from "lucide-react-native";
@@ -6,7 +6,8 @@ import { useCSSVariable } from "uniwind";
 import { useAuth } from "@/context/AuthContext";
 import { useI18n } from "@/i18n";
 import { useMyRentals, useRentalAction } from "@/hooks/useRentals";
-import { useCountdown } from "@/hooks/useCountdown";
+import { countdownText, useCountdown } from "@/hooks/useCountdown";
+import { readingPosition } from "@/lib/readingPosition";
 import {
   Badge,
   BookCover,
@@ -22,6 +23,7 @@ import {
   Text,
 } from "@/ui";
 import SignInPrompt from "@/components/SignInPrompt";
+import { cancelReasonLabel, isUnconfirmed, rentalStatusLabel } from "@/lib/rentalLabels";
 
 const TONE = {
   pending_payment: "warning",
@@ -58,11 +60,9 @@ const RentalCard = ({ rental, kind, onReturn, onCancel, extendAction, startNowAc
   const book = rental.bookId ?? {};
   const countdown = useCountdown(kind === "reading" ? rental.endDate : null);
 
-  const isUnconfirmed = rental.status === "pending_payment" || rental.status === "payment_review";
-  const statusLabel = isUnconfirmed
-    ? t("mobile.availability.notConfirmed")
-    : t(`library.status.${rental.status}`);
-  const statusTone = isUnconfirmed ? "warning" : TONE[rental.status] || "neutral";
+  // Neutral labels for unpaid states: the app never mentions payment.
+  const statusLabel = rentalStatusLabel(t, rental.status);
+  const statusTone = isUnconfirmed(rental.status) ? "warning" : TONE[rental.status] || "neutral";
 
   const meta =
     kind === "reading"
@@ -109,14 +109,14 @@ const RentalCard = ({ rental, kind, onReturn, onCancel, extendAction, startNowAc
         <Text variant="caption" className="text-fg-subtle">
           {meta}
           {rental.status === "cancelled" && rental.cancelReason
-            ? ` · ${t(`library.cancelReason.${rental.cancelReason}`)}`
+            ? ` · ${cancelReasonLabel(t, rental.cancelReason)}`
             : null}
         </Text>
         {kind === "reading" && countdown && !countdown.done ? (
           <View className="flex-row items-center gap-1">
             <Icon as={Clock} tone="brand" size={13} />
             <Text variant="caption" weight="medium" className="text-brand">
-              {countdown.text}
+              {countdownText(t, countdown)}
             </Text>
           </View>
         ) : null}
@@ -184,6 +184,15 @@ export default function LibraryScreen() {
 
   const { reading, upcoming, history } = groupRentals(list);
 
+  // Forget the saved page of books whose rental is over (and not booked again).
+  useEffect(() => {
+    const live = new Set([...reading, ...upcoming].map((r) => r.bookId?._id ?? r.bookId));
+    for (const r of history) {
+      const id = r.bookId?._id ?? r.bookId;
+      if (id && !live.has(id)) readingPosition.clear(id);
+    }
+  }, [list]); // eslint-disable-line react-hooks/exhaustive-deps -- groups are derived from list
+
   const confirmReturn = (rental) => {
     if (Platform.OS === "web") {
       return returnAction.mutate(rental);
@@ -206,7 +215,7 @@ export default function LibraryScreen() {
       t("library.confirmCancelTitle"),
       rental.paymentMethod === "credit"
         ? t("library.confirmCancelCredit")
-        : t("library.confirmCancelPaid"),
+        : t("mobile.library.confirmCancel"),
       [
         { text: t("library.keep"), style: "cancel" },
         {
@@ -262,7 +271,10 @@ export default function LibraryScreen() {
         value={tab}
         onChange={setTab}
         options={[
-          ["reading", `${t("library.reading")}${reading.length ? ` (${reading.length})` : ""}`],
+          [
+            "reading",
+            `${t("mobile.library.tabReading")}${reading.length ? ` (${reading.length})` : ""}`,
+          ],
           ["upcoming", `${t("library.upcoming")}${upcoming.length ? ` (${upcoming.length})` : ""}`],
           ["history", `${t("library.history")}${history.length ? ` (${history.length})` : ""}`],
         ]}

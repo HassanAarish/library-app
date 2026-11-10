@@ -31,7 +31,31 @@ export const useCountdown = (until) => {
     text = `${totalMinutes}:${String(seconds).padStart(2, "0")}`;
   }
 
-  return { left, text, done: left === 0 };
+  return {
+    left,
+    text,
+    done: left === 0,
+    days,
+    hours: totalHours % 24,
+    totalHours,
+    minutes: totalMinutes % 60,
+    totalMinutes,
+    seconds,
+  };
+};
+
+/**
+ * The countdown as translatable text (`text` above is fixed English, kept for
+ * tests and logs): "4d 12h", "3h 05m" or "12:34".
+ */
+export const countdownText = (t, c) => {
+  if (!c) return "";
+  const pad = (n) => String(n).padStart(2, "0");
+  if (c.days > 0) return t("mobile.countdown.daysHours", { days: c.days, hours: c.hours });
+  if (c.totalHours > 0) {
+    return t("mobile.countdown.hoursMinutes", { hours: c.totalHours, minutes: pad(c.minutes) });
+  }
+  return t("mobile.countdown.minutesSeconds", { minutes: c.totalMinutes, seconds: pad(c.seconds) });
 };
 
 export default useCountdown;

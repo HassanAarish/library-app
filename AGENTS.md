@@ -318,6 +318,11 @@ Put it in `src/ui/`, export from `src/ui/index.js`, and keep the website's name 
 | Search box loses focus in the browser | `keyboardDismissMode="on-drag"` fires on any web scroll | Off for web in `(tabs)/books.jsx` |
 | Hermes `Intl` errors on Android | Not every `Intl` API exists | `src/i18n/index.jsx` has fallbacks; keep them |
 | Port already in use / odd test results | An earlier server is still running | Check who's on `:5001` before assuming the app is wrong |
+| Payment wording appears in the app | Reused website strings (`library.*`, `reader.*`, `payment.*`) talk about paying | Use `mobile.*` keys or `lib/rentalLabels.js`; `src/i18n/appText.test.js` checks every screen |
+| A box inside a ScrollView has 0 size | Percent `height`/`maxHeight` has nothing to measure against | Size from `useWindowDimensions()` in pixels |
+| A full-screen `Pressable` layer swallows taps | It sits above buttons (Retry) and pinch gestures | Use side strips, or put `onPress` on the content itself |
+| An image keeps reloading | A new `source` object on every render | `useMemo` the source |
+| Tests or lint fail right after pulling | A package was added on another computer | Run `npm install` after every pull |
 
 ---
 
