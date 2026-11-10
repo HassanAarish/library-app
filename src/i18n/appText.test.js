@@ -8,7 +8,8 @@ import { cancelReasonLabel, rentalStatusLabel } from "@/lib/rentalLabels";
  * the app. Every app screen reuses some website strings, so this checks the
  * text each screen actually uses, not just the app's own `mobile.*` group.
  */
-const PAYMENT = /\bpay|paid\b|payment|price|\bRs\b|easypaisa|refund|\bbuy|purchase|rent it/i;
+const PAYMENT =
+  /\bpay|paid\b|payment|price|\bRs\b|easypaisa|refund|\bbuy|purchase|rent it|to rent\b|rent now/i;
 
 const lookup = (key) => key.split(".").reduce((node, part) => node?.[part], en);
 const t = (key) => lookup(key) ?? key;

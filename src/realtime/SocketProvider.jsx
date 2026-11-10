@@ -8,6 +8,7 @@ import { useI18n } from "@/i18n";
 import { qk } from "@/lib/queryClient";
 import { tokenStore } from "@/lib/tokenStore";
 import { useToast } from "@/ui";
+import { notificationText } from "@/lib/notificationText";
 
 /**
  * One Socket.IO connection for the app (ported from the website): anonymous
@@ -66,7 +67,8 @@ export const SocketProvider = ({ children }) => {
     });
 
     s.on("notification:new", (n) => {
-      toast.show(n.title);
+      // The app's own wording for payment-related types (Google Play rule).
+      toast.show(notificationText(t, n).title);
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
       const area = n.type?.split(".")[0];
       (STALE_BY_TYPE[area] || []).forEach((queryKey) =>

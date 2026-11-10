@@ -6,8 +6,8 @@ requests and get notifications. It talks to the same Express API as the
 website (`../library-backend`) and reuses the website's design and code
 (`../library-frontend`).
 
-> **Status:** M0 (foundation), M1 (sign-in), M2 (catalogue), and M3 (library & reader) done. **Next:**
-> M4 requests, inbox & push → M5 polish → M6 Play Store release.
+> **Status:** M0 (foundation), M1 (sign-in), M2 (catalogue), M3 (library & reader) and M4 part 1
+> (requests & inbox) done. **Next:** M4 part 2, push notifications → M5 polish → M6 Play Store release.
 
 ## ⚠️ Google Play rule: the app is for reading, not buying
 
@@ -39,6 +39,18 @@ Under the Google Play rule these screens show **no prices, price sorts or rent b
 | Reader | `/read/:id` | Full-screen page reader streaming watermarked pages (`cachePolicy="memory"`), screenshot blocking (`expo-screen-capture`), reading position memory, zoom, and jump-to-page navigation |
 
 Under the Google Play rule, unpaid bookings are marked "Not confirmed yet" without payment links.
+
+## 🙋 Requests & inbox (M4)
+
+| Screen | Route | What it does |
+|--------|-------|--------------|
+| Requests | `/requests` | Everyone's requests (search, open or added, most wanted or newest) and "Mine" (requests I asked for or follow, my category suggestions). Request a book, suggest a category, follow |
+| Request | `/requests/:id`, `/requests/new`, `/requests/suggest` | A request with its timeline; the request form with Open Library suggestions; the category form |
+| Inbox | `/notifications` | All or unread, open what it's about, mark read, delete. The Account tab shows the unread count |
+
+Notification text comes from the backend, which mentions payments for the website.
+`lib/notificationText.js` gives payment-related types the app's own wording (the live
+pop-up too), and `lib/notificationLink.js` only opens app screens.
 
 ## 🔐 Sign-in (M1)
 

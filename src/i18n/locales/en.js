@@ -927,6 +927,27 @@ const en = {
       hoursMinutes: "{hours}h {minutes}m",
       minutesSeconds: "{minutes}:{seconds}",
     },
+    requests: {
+      all: "All requests",
+      category: "Category",
+      seeBook: "See the book",
+      inLibraryBody: "“{title}” is already in the library.",
+    },
+    // App wording for payment-related notifications (Google Play rule).
+    notify: {
+      confirmedTitle: "Booking confirmed",
+      confirmedBody: "Your booking is confirmed. Your library shows when you can start reading.",
+      planActiveTitle: "Reading plan active",
+      planActiveBody: "Your reading plan is now active.",
+      notConfirmedTitle: "Booking not confirmed",
+      notConfirmedBody: "We couldn't confirm this booking. Contact us if you have questions.",
+      cancelledUpdateTitle: "Update on a cancelled booking",
+      cancelledUpdateBody: "We've emailed you the details.",
+      releasedTitle: "Booking released",
+      releasedBody: "This booking wasn't confirmed in time, so its dates were released.",
+      adminTitle: "Something to review",
+      adminBody: "Open the admin console on the website.",
+    },
     comingSoon: "This screen arrives in {phase}.",
     settings: {
       title: "Settings",

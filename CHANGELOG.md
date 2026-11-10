@@ -8,6 +8,12 @@ The version shown in the app comes from `package.json`.
 ## [Unreleased]
 
 ### Added
+- Requests & inbox (phase M4, part 1): Requests tab with search, open/added filter,
+  most wanted or newest, follow, request a book with Open Library suggestions, suggest
+  a category, and "Mine" (my requests and suggestions); request pages with their
+  timeline; notifications inbox with an unread badge, mark read and delete.
+  Notifications open the matching app screen, and payment-related ones use the app's
+  own wording (also in the live pop-up).
 - My library & protected reader (phase M3): Library tab grouping rentals into Reading now, Upcoming and History with live countdowns, 7-day extension and early return. Full-screen page reader (/read/[bookId]) streaming watermarked pages with memory-only caching, screenshot blocking (expo-screen-capture), reading position memory, zoom and jump-to-page navigation.
 
 ### Fixed

@@ -1,6 +1,8 @@
-import { Alert, Platform, View } from "react-native";
+import { Alert, Platform, Pressable, View } from "react-native";
 import * as WebBrowser from "expo-web-browser";
-import { CircleCheck, CircleX, LogOut } from "lucide-react-native";
+import { Bell, ChevronRight, CircleCheck, CircleX, LogOut } from "lucide-react-native";
+import { router } from "expo-router";
+import { useUnreadCount } from "@/hooks/useNotifications";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useI18n } from "@/i18n";
@@ -54,6 +56,39 @@ const ProfileCard = () => {
   );
 };
 
+/** Opens the notifications inbox, with the unread count. */
+const InboxRow = () => {
+  const { t } = useI18n();
+  const unread = useUnreadCount();
+  return (
+    <Pressable
+      onPress={() => router.push("/notifications")}
+      accessibilityRole="button"
+      accessibilityLabel={
+        unread
+          ? `${t("inbox.title")}, ${t("notifications.unread", { count: unread })}`
+          : t("inbox.title")
+      }
+      className="mt-4 min-h-14 flex-row items-center gap-3 rounded-card border border-line bg-surface px-4"
+    >
+      <Icon as={Bell} tone="brand" />
+      <Text weight="medium" className="flex-1">
+        {t("inbox.title")}
+      </Text>
+      {unread ? (
+        <View className="min-w-6 items-center rounded-full bg-danger px-2 py-0.5">
+          <Text variant="caption" weight="semibold" className="text-white">
+            {unread > 99 ? "99+" : unread}
+          </Text>
+        </View>
+      ) : null}
+      <View className="rtl:rotate-180">
+        <Icon as={ChevronRight} tone="fg-subtle" size={18} />
+      </View>
+    </Pressable>
+  );
+};
+
 /** Account: the signed-in profile or a sign-in prompt, then settings. */
 export default function AccountScreen() {
   const { t } = useI18n();
@@ -64,7 +99,14 @@ export default function AccountScreen() {
   return (
     <Screen>
       <PageHeader title={t("nav.account")} />
-      {isAuthenticated ? <ProfileCard /> : <SignInPrompt />}
+      {isAuthenticated ? (
+        <>
+          <ProfileCard />
+          <InboxRow />
+        </>
+      ) : (
+        <SignInPrompt />
+      )}
 
       <Text variant="heading" accessibilityRole="header" className="mt-10 mb-3">
         {t("mobile.settings.title")}
