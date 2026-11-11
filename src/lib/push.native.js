@@ -67,6 +67,22 @@ export const getPushToken = async ({ ask = true } = {}) => {
 };
 
 /**
+ * Whether this phone shows our notifications: "on", "ask" (not answered yet,
+ * we may ask), "off" (said no; only the phone's settings can change it) or
+ * "unsupported" (Expo Go, no project id).
+ */
+export const pushPermission = async () => {
+  if (!pushSupported) return "unsupported";
+  try {
+    const { granted, canAskAgain } = await lib().getPermissionsAsync();
+    if (granted) return "on";
+    return canAskAgain ? "ask" : "off";
+  } catch {
+    return "unsupported";
+  }
+};
+
+/**
  * Call `onOpen(data)` when the user taps a push, including the one that
  * launched the app. `data` is what the backend sent:
  * { notificationId, type, data }. Returns a function that stops listening.

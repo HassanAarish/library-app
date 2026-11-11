@@ -60,6 +60,38 @@ the notification, so no system banner is added. Push text is written by the back
 with the same app-safe wording. Push needs a **development build** on a real Android
 phone: it doesn't work in Expo Go or the browser preview, where it quietly does nothing.
 
+## 🗑️ Delete account (M5)
+
+Account tab › **Delete account** (`/account/delete`), which Google Play requires
+inside the app. It shows what's deleted and kept, what still stops it (reading,
+upcoming or unconfirmed bookings, cancelled bookings still being settled) with a link
+to the library, a tick box to give up unused credits, and the password for email
+accounts. The account closes at once and is deleted after 14 days; signing in before
+then keeps it. The public help page for the Play listing is the website's
+`/delete-account`.
+
+## 🔗 App Links, settings and crashes (M5)
+
+- **App Links:** website links in emails and messages open the app when it's
+  installed (Android). Only paths the app has screens for are claimed
+  (`src/lib/appLinkPaths.json`: books, requests, the reader, and the account pages
+  for the library, inbox, my requests and profile); payments, plans, renting and
+  password reset always open the website. `src/app/+native-intent.js` maps each
+  website path to an app screen (`lib/appLinks.js`; the website's `/account` is
+  the app's Library). Needs a real `https` `EXPO_PUBLIC_SITE_URL` at build time,
+  and the website serving `/.well-known/assetlinks.json` with the app's signing
+  fingerprints (see the website README). Android checks that file when the app is
+  installed.
+- **Notifications on this phone** (Account › Settings): on, "Turn on" (asks once),
+  or "Open phone settings" when it was declined. Says so when push is off in the
+  reader's settings on the website. Hidden in Expo Go and the browser preview.
+- **Version** shown at the bottom of the Account tab, for testers' reports.
+- **Crash screen:** a screen that crashes shows "Something went wrong" with Try again
+  (Expo Router `ErrorBoundary` in the root layout) instead of going blank.
+- **Right-to-left:** every screen was checked with the layout flipped (as for Urdu):
+  rows, arrows and the tab bar mirror, nothing scrolls sideways. Urdu itself only
+  needs a translated `locales/ur.js` (see `src/i18n/index.jsx`).
+
 ## 🔐 Sign-in (M1)
 
 | Screen | Route | What it does |
@@ -155,7 +187,7 @@ anyone with the app can read them, so no secrets.
 |----------|---------|
 | `EXPO_PUBLIC_API_URL` | Backend. **Leave empty in development**: the app uses the backend on the computer running `npm start` (port 5001), via its network address, so a real phone on the same Wi-Fi reaches it |
 | `EXPO_PUBLIC_SOCKET_URL` | Only if sockets live elsewhere |
-| `EXPO_PUBLIC_SITE_URL` | The website (legal pages, help). Links to it are hidden when empty |
+| `EXPO_PUBLIC_SITE_URL` | The website (legal pages, help). Links to it are hidden when empty. A real `https` address also turns on **App Links** (below) |
 | `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | Google sign-in: the **web** client id, the same value as the backend's `GOOGLE_CLIENT_ID`. Empty hides the button |
 | `EXPO_PUBLIC_FACEBOOK_APP_ID`, `FACEBOOK_CLIENT_TOKEN` | Facebook sign-in (same app as the website). Both are needed when the app is built |
 | `ANDROID_PACKAGE` | Defaults to `pk.libraryhub.app`. **Permanent once published**, so confirm it before the first Play upload |

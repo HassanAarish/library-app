@@ -1,6 +1,7 @@
 import { Alert, Platform, Pressable, View } from "react-native";
 import * as WebBrowser from "expo-web-browser";
-import { Bell, ChevronRight, CircleCheck, CircleX, LogOut } from "lucide-react-native";
+import Constants from "expo-constants";
+import { Bell, ChevronRight, CircleCheck, CircleX, LogOut, Trash2 } from "lucide-react-native";
 import { router } from "expo-router";
 import { useUnreadCount } from "@/hooks/useNotifications";
 import { useAuth } from "@/context/AuthContext";
@@ -10,6 +11,10 @@ import { useSocket } from "@/realtime/SocketProvider";
 import { baseURL, siteURL } from "@/constants";
 import { Avatar, Button, Card, Icon, PageHeader, Screen, Segmented, Text } from "@/ui";
 import SignInPrompt from "@/components/SignInPrompt";
+import PhoneNotifications from "@/components/PhoneNotifications";
+
+// The version people see (from package.json via app.config.js), for testers' reports.
+const APP_VERSION = Constants.expoConfig?.version ?? "";
 
 /** Who's signed in, and sign-out. Editing the profile stays on the website for now. */
 const ProfileCard = () => {
@@ -89,6 +94,27 @@ const InboxRow = () => {
   );
 };
 
+/** Opens "Delete your account" (Google Play requires it in the app). */
+const DeleteAccountRow = () => {
+  const { t } = useI18n();
+  return (
+    <Pressable
+      onPress={() => router.push("/account/delete")}
+      accessibilityRole="button"
+      accessibilityLabel={t("mobile.account.deleteRow")}
+      className="min-h-12 flex-row items-center gap-3 px-1"
+    >
+      <Icon as={Trash2} tone="danger" size={18} />
+      <Text weight="medium" className="flex-1 text-danger">
+        {t("mobile.account.deleteRow")}
+      </Text>
+      <View className="rtl:rotate-180">
+        <Icon as={ChevronRight} tone="fg-subtle" size={18} />
+      </View>
+    </Pressable>
+  );
+};
+
 /** Account: the signed-in profile or a sign-in prompt, then settings. */
 export default function AccountScreen() {
   const { t } = useI18n();
@@ -145,7 +171,13 @@ export default function AccountScreen() {
             </Text>
           </View>
         </View>
+        {isAuthenticated ? <PhoneNotifications /> : null}
       </Card>
+
+      {isAuthenticated ? <DeleteAccountRow /> : null}
+      <Text variant="caption" className="mt-6 text-center" selectable>
+        {t("mobile.settings.version", { version: APP_VERSION })}
+      </Text>
     </Screen>
   );
 }

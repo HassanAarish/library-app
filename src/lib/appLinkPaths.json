@@ -1,0 +1,9 @@
+[
+  { "pathPrefix": "/books/" },
+  { "pathPrefix": "/requests" },
+  { "pathPrefix": "/read/" },
+  { "path": "/account" },
+  { "path": "/account/notifications" },
+  { "path": "/account/requests" },
+  { "path": "/account/profile" }
+]

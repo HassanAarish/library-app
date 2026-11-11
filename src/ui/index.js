@@ -7,6 +7,7 @@ export { default as Logo } from "./Logo";
 export { default as Avatar } from "./Avatar";
 export { Field, Input, PasswordInput, CodeInput, Divider } from "./Field";
 export { default as Segmented } from "./Segmented";
+export { default as Checkbox } from "./Checkbox";
 export {
   Screen,
   PageHeader,

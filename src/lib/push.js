@@ -4,4 +4,5 @@
  */
 export const pushSupported = false;
 export const getPushToken = async () => null;
+export const pushPermission = async () => "unsupported";
 export const onPushOpened = () => () => {};

@@ -8,6 +8,15 @@ The version shown in the app comes from `package.json`.
 ## [Unreleased]
 
 ### Added
+- App Links (phase M5): website links to books, requests, the reader and account
+  pages open the app when installed; payment, plan and password pages stay on the
+  website. Turned on by a real `https` `EXPO_PUBLIC_SITE_URL`.
+- Account › Settings: "Notifications on this phone" (turn on, or open the phone's
+  settings when declined) and the app version.
+- A "Something went wrong / Try again" screen when a screen crashes.
+- Delete account (phase M5): Account tab › Delete account, with what still stops it,
+  giving up unused credits and the password; signs out, and signing in within 14 days
+  keeps the account. New `Checkbox` in `@/ui`.
 - Push notifications (phase M4, part 2): the app asks for permission after sign-in,
   registers the phone with the backend and removes it on sign-out; tapping a push
   marks it read and opens the matching screen, including when it starts the app.
@@ -22,6 +31,8 @@ The version shown in the app comes from `package.json`.
 - My library & protected reader (phase M3): Library tab grouping rentals into Reading now, Upcoming and History with live countdowns, 7-day extension and early return. Full-screen page reader (/read/[bookId]) streaming watermarked pages with memory-only caching, screenshot blocking (expo-screen-capture), reading position memory, zoom and jump-to-page navigation.
 
 ### Fixed
+- Screen readers now hear which option is chosen in segmented controls (library
+  tabs, All/Mine, Appearance) and whether the tick box is ticked (`aria-checked`).
 - Inbox: "book added" notifications no longer say "You can rent it now"; server text
   that mentions paying or renting is replaced with neutral wording.
 - Reader: the next page is preloaded in memory only (it was also being saved to disk);

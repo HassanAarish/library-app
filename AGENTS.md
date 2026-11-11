@@ -323,6 +323,10 @@ Put it in `src/ui/`, export from `src/ui/index.js`, and keep the website's name 
 | A full-screen `Pressable` layer swallows taps | It sits above buttons (Retry) and pinch gestures | Use side strips, or put `onPress` on the content itself |
 | An image keeps reloading | A new `source` object on every render | `useMemo` the source |
 | Tests or lint fail right after pulling | A package was added on another computer | Run `npm install` after every pull |
+| A wrong password signs the user out | The API answered 401, which the app treats as "session ended" | Signed-in checks of a password return 400 |
+| Jest doesn't exit after the tests | A `QueryClient` mutation keeps a 5-minute timer | Give the test client `mutations: { gcTime: 0 }` as well as queries |
+| A test's tap or typing has no effect | React Native Testing Library 14's `fireEvent` is async | `await fireEvent.press(...)` |
+| Screen readers don't hear a choice in the browser | `accessibilityState` is ignored on the web | Use `aria-checked` / `aria-selected`, which work on phones too |
 
 ---
 

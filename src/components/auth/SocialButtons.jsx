@@ -38,7 +38,13 @@ const SocialButtons = () => {
         router.push({ pathname: "/two-factor", params: { pendingToken: raw.pendingToken } });
       } else if (raw.token) {
         const user = await signIn(raw.token);
-        if (user) toast.show(t("auth.welcome", { name: user.name?.split(" ")[0] ?? "" }));
+        if (user) {
+          toast.show(
+            raw.deletionCancelled
+              ? t("mobile.account.deletionKept")
+              : t("auth.welcome", { name: user.name?.split(" ")[0] ?? "" }),
+          );
+        }
       }
     } catch (err) {
       toast.show(err?.message || t("auth.socialFailed"), { tone: "danger" });

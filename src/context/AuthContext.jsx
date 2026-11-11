@@ -5,6 +5,7 @@ import { setUnauthorizedHandler } from "@/lib/http";
 import { clearSocialSessions } from "@/lib/socialAuth";
 import { pushDevice } from "@/lib/pushDevice";
 import { readingPosition } from "@/lib/readingPosition";
+import { sessionFlags } from "@/lib/sessionFlags";
 import { tokenStore } from "@/lib/tokenStore";
 
 /**
@@ -55,6 +56,7 @@ export const AuthProvider = ({ children }) => {
   /** Call with the token from login / social login / 2FA. Resolves to the user. */
   const signIn = useCallback(
     async (token) => {
+      sessionFlags.closingAccount = false;
       await tokenStore.set(token);
       setState((prev) => ({ ...prev, status: "loading" }));
       return loadProfile();

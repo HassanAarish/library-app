@@ -44,5 +44,7 @@ export const qk = {
   notifications: (params) => ["notifications", "list", params],
   unreadCount: ["notifications", "unread"],
 
+  deletionStatus: ["account", "deletion"],
+
   admin: (area, params) => ["admin", area, params],
 };

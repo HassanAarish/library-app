@@ -8,6 +8,7 @@ import { useI18n } from "@/i18n";
 import { qk } from "@/lib/queryClient";
 import { tokenStore } from "@/lib/tokenStore";
 import { useToast } from "@/ui";
+import { sessionFlags } from "@/lib/sessionFlags";
 import { notificationText } from "@/lib/notificationText";
 
 /**
@@ -20,6 +21,7 @@ import { notificationText } from "@/lib/notificationText";
  *   notification:read  → unread count from another device
  *   book:availability  → that book's availability (queue, place in line)
  *   account:blocked    → sign out
+ *   account:closed     → sign out (the account was closed for deletion)
  */
 const SocketContext = createContext(null);
 
@@ -89,6 +91,12 @@ export const SocketProvider = ({ children }) => {
 
     s.on("account:blocked", () => {
       toast.show(t("account.blocked"), { tone: "danger" });
+      signOut();
+    });
+
+    s.on("account:closed", () => {
+      if (sessionFlags.closingAccount) return; // deleted on this phone: that screen signs out
+      toast.show(t("mobile.account.closedOnOtherDevice"));
       signOut();
     });
 

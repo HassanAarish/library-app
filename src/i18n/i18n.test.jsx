@@ -9,7 +9,7 @@ describe("i18n", () => {
   test("looks up nested keys and fills {vars}", async () => {
     const { t } = await setup();
     expect(t("mobile.tabs.library")).toBe("Library");
-    expect(t("mobile.comingSoon", { phase: "M2" })).toBe("This screen arrives in M2.");
+    expect(t("mobile.settings.version", { version: "0.1.0" })).toBe("Version 0.1.0");
   });
 
   test("picks the plural form from count", async () => {

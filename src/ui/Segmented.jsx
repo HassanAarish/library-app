@@ -16,7 +16,9 @@ const Segmented = ({ value, onChange, options, label, className }) => (
           key={v}
           onPress={() => onChange(v)}
           accessibilityRole="radio"
-          accessibilityState={{ selected }}
+          // Radios announce their choice as "checked". aria-checked works on
+          // phones and the web (the web ignores accessibilityState).
+          aria-checked={selected}
           className={cn(
             "min-h-10 flex-1 items-center justify-center rounded-lg px-1",
             selected && "bg-fg",

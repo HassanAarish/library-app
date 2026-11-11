@@ -21,7 +21,13 @@ export default function TwoFactorScreen() {
     mutationFn: ({ code }) => twoFactor.verify({ pendingToken, code }),
     onSuccess: async ({ raw }) => {
       const user = await signIn(raw.token);
-      if (user) toast.show(t("auth.welcome", { name: user.name?.split(" ")[0] ?? "" }));
+      if (user) {
+        toast.show(
+          raw.deletionCancelled
+            ? t("mobile.account.deletionKept")
+            : t("auth.welcome", { name: user.name?.split(" ")[0] ?? "" }),
+        );
+      }
     },
     onError: (err) => toast.show(err.message, { tone: "danger" }),
   });

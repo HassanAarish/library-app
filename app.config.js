@@ -21,6 +21,33 @@ const GOOGLE_SERVICES_FILE =
   process.env.GOOGLE_SERVICES_JSON ||
   (require("fs").existsSync("./google-services.json") ? "./google-services.json" : undefined);
 
+// Android App Links: website links (emails, shares) open the app when it's
+// installed. Only for a real https site, and only the paths the app has
+// screens for (src/lib/appLinkPaths.json; see src/lib/appLinks.js). The site
+// must serve /.well-known/assetlinks.json (the website build makes it).
+const SITE_HOST = (() => {
+  try {
+    const url = new URL(process.env.EXPO_PUBLIC_SITE_URL || "");
+    return url.protocol === "https:" && !/[<>]/.test(url.host) ? url.host : null;
+  } catch {
+    return null;
+  }
+})();
+const APP_LINKS = SITE_HOST
+  ? [
+      {
+        action: "VIEW",
+        autoVerify: true,
+        category: ["BROWSABLE", "DEFAULT"],
+        data: require("./src/lib/appLinkPaths.json").map((p) => ({
+          scheme: "https",
+          host: SITE_HOST,
+          ...p,
+        })),
+      },
+    ]
+  : [];
+
 module.exports = () => ({
   name: "LibraryHub",
   slug: "libraryhub",
@@ -42,6 +69,7 @@ module.exports = () => ({
   android: {
     package: process.env.ANDROID_PACKAGE || "pk.libraryhub.app",
     ...(GOOGLE_SERVICES_FILE ? { googleServicesFile: GOOGLE_SERVICES_FILE } : {}),
+    ...(APP_LINKS.length ? { intentFilters: APP_LINKS } : {}),
     adaptiveIcon: {
       backgroundColor: BRAND,
       foregroundImage: "./assets/android-icon-foreground.png",

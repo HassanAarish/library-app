@@ -13,6 +13,11 @@ export const pushDevice = {
     registered = token;
   },
 
+  /** The account was closed: the server already removed the phone. */
+  forget: () => {
+    registered = null;
+  },
+
   /**
    * Stop pushes to this phone. Call before the session token is cleared.
    * Forgets the token first, so a 401 that signs out again can't loop, and

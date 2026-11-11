@@ -899,6 +899,45 @@ const en = {
       signOutBody: "You can sign back in at any time.",
       preferencesOnWebsite: "Edit your profile, password and two-step verification on the website.",
       openWebsite: "Open the website",
+      deleteRow: "Delete account",
+      deletionKept: "Welcome back! Your account will not be deleted.",
+      closedOnOtherDevice: "This account was closed. Sign in again to keep it.",
+    },
+    deleteAccount: {
+      title: "Delete your account",
+      intro:
+        "Your account closes straight away and you're signed out everywhere. After {days} days it's deleted for good.",
+      changeMind: "Changed your mind? Sign in again before then and everything stays as it was.",
+      whatGoes: "What's deleted",
+      whatGoesBody:
+        "Your name, email, profile, settings, notifications and saved reading positions.",
+      whatStays: "What stays",
+      whatStaysBody:
+        "Your reviews and book requests stay, shown as “Former reader”. Records of past bookings are kept without your name, as the law requires.",
+      blockedTitle: "Finish these first",
+      blockedBody: "You can delete your account once nothing is still running.",
+      reading: { one: "You're reading 1 book", other: "You're reading {count} books" },
+      upcoming: { one: "1 upcoming booking", other: "{count} upcoming bookings" },
+      unconfirmed: {
+        one: "1 booking waiting to be confirmed",
+        other: "{count} bookings waiting to be confirmed",
+      },
+      refunds: {
+        one: "1 cancelled booking still being settled",
+        other: "{count} cancelled bookings still being settled",
+      },
+      openLibrary: "Go to my library",
+      credits: {
+        one: "I'm giving up my 1 unused book credit",
+        other: "I'm giving up my {count} unused book credits",
+      },
+      creditsRule: "Tick this to continue. Unused credits can't be brought back.",
+      password: "Your password",
+      passwordRule: "Enter your password to confirm.",
+      submit: "Delete my account",
+      confirmTitle: "Delete your account?",
+      confirmBody: "You'll be signed out now. Your account is deleted on {date}.",
+      done: "Your account is closed and will be deleted on {date}.",
     },
     book: {
       readOnlyNote: "Books open here in the app and can't be downloaded.",
@@ -951,19 +990,31 @@ const en = {
       genericTitle: "LibraryHub",
       genericBody: "You have a new update.",
     },
-    comingSoon: "This screen arrives in {phase}.",
     settings: {
       title: "Settings",
       appearance: "Appearance",
       server: "Server",
       connected: "Live updates connected",
       disconnected: "Live updates not connected",
+      pushTitle: "Notifications on this phone",
+      pushOn: "On",
+      pushAsk: "Get a notification when your book is ready or a request you follow is updated.",
+      pushOff: "Off. You can turn them on in your phone's settings.",
+      pushOffByYou: "Off in your notification settings on the website.",
+      pushTurnOn: "Turn on",
+      pushOpenSettings: "Open phone settings",
+      version: "Version {version}",
     },
     offline: {
       title: "Can't reach LibraryHub",
       body: "Check your internet connection. You're still signed in.",
     },
     notFound: "This screen doesn't exist.",
+    crash: {
+      title: "Something went wrong",
+      body: "Sorry, this screen ran into a problem. Try again, and if it keeps happening, contact us.",
+      retry: "Try again",
+    },
   },
 
   footer: {
