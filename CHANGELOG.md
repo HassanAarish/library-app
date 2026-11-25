@@ -7,6 +7,11 @@ The version shown in the app comes from `package.json`.
 
 ## [Unreleased]
 
+### Changed
+- `i18n/locales/en.js` kept in step with the website: "Not adding" request filter,
+  "1 book" / "N books" in the catalogue, the two-step setup key, and the password
+  note now says changing it signs you out everywhere.
+
 ### Added
 - App Links (phase M5): website links to books, requests, the reader and account
   pages open the app when installed; payment, plan and password pages stay on the
