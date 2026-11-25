@@ -20,19 +20,27 @@ import { watchAppFocus } from "@/lib/appFocus";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 import { SocketProvider } from "@/realtime/SocketProvider";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
+import CrashScreen from "@/components/CrashScreen";
 import { ToastProvider } from "@/ui";
 
 // Keep the splash screen up until fonts and the saved session are ready.
 SplashScreen.preventAutoHideAsync().catch(() => {});
+
+/** A crashed screen shows this instead of going blank (Expo Router). */
+export function ErrorBoundary({ retry }) {
+  return <CrashScreen retry={retry} />;
+}
 
 /**
  * Provider tree (same order as the website):
  * SafeArea → ReactQuery → I18n → Theme → Toast → Auth → Socket → screens
  */
 const Navigator = () => {
-  const { status } = useAuth();
+  const { status, isAuthenticated } = useAuth();
   const { isDark } = useTheme();
   const canvas = useCSSVariable("--color-canvas");
+  usePushNotifications();
 
   useEffect(() => {
     if (status !== "loading") SplashScreen.hideAsync().catch(() => {});
@@ -43,6 +51,17 @@ const Navigator = () => {
       <StatusBar style={isDark ? "light" : "dark"} />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: canvas } }}>
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="books/[bookId]" />
+        <Stack.Screen name="read/[bookId]" options={{ animation: "fade" }} />
+        <Stack.Screen name="requests/[requestId]" />
+        <Stack.Screen name="requests/new" />
+        <Stack.Screen name="requests/suggest" />
+        <Stack.Screen name="notifications" />
+        <Stack.Screen name="account/delete" />
+        {/* Guests only: signing in removes these screens and returns to the tabs. */}
+        <Stack.Protected guard={!isAuthenticated}>
+          <Stack.Screen name="(auth)" />
+        </Stack.Protected>
         <Stack.Screen name="+not-found" />
       </Stack>
     </>

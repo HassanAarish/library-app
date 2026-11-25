@@ -2,6 +2,10 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { useQueryClient } from "@tanstack/react-query";
 import { user as userApi } from "@/lib/api";
 import { setUnauthorizedHandler } from "@/lib/http";
+import { clearSocialSessions } from "@/lib/socialAuth";
+import { pushDevice } from "@/lib/pushDevice";
+import { readingPosition } from "@/lib/readingPosition";
+import { sessionFlags } from "@/lib/sessionFlags";
 import { tokenStore } from "@/lib/tokenStore";
 
 /**
@@ -22,7 +26,12 @@ export const AuthProvider = ({ children }) => {
   const [state, setState] = useState({ status: "loading", user: null, preferences: null });
 
   const signOut = useCallback(async () => {
+    // While the session token still works: no more pushes to this phone.
+    await pushDevice.unregister();
     await tokenStore.set(null);
+    clearSocialSessions();
+    // Saved reading positions belong to this reader.
+    readingPosition.clearAll();
     // Drop every cached response that belonged to this user.
     queryClient.clear();
     setState(GUEST);
@@ -47,6 +56,7 @@ export const AuthProvider = ({ children }) => {
   /** Call with the token from login / social login / 2FA. Resolves to the user. */
   const signIn = useCallback(
     async (token) => {
+      sessionFlags.closingAccount = false;
       await tokenStore.set(token);
       setState((prev) => ({ ...prev, status: "loading" }));
       return loadProfile();

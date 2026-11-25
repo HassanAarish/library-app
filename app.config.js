@@ -12,6 +12,41 @@ const { version } = require("./package.json");
 const CANVAS_LIGHT = "#fbf8f3";
 const CANVAS_DARK = "#14110e";
 const BRAND = "#1f5c4a";
+const FACEBOOK_APP_ID = process.env.EXPO_PUBLIC_FACEBOOK_APP_ID;
+const FACEBOOK_CLIENT_TOKEN = process.env.FACEBOOK_CLIENT_TOKEN;
+// Firebase config (Android push). Kept out of git: EAS builds get it from the
+// GOOGLE_SERVICES_JSON file variable, local builds from ./google-services.json.
+// Optional, so Expo Go and the browser preview work without it.
+const GOOGLE_SERVICES_FILE =
+  process.env.GOOGLE_SERVICES_JSON ||
+  (require("fs").existsSync("./google-services.json") ? "./google-services.json" : undefined);
+
+// Android App Links: website links (emails, shares) open the app when it's
+// installed. Only for a real https site, and only the paths the app has
+// screens for (src/lib/appLinkPaths.json; see src/lib/appLinks.js). The site
+// must serve /.well-known/assetlinks.json (the website build makes it).
+const SITE_HOST = (() => {
+  try {
+    const url = new URL(process.env.EXPO_PUBLIC_SITE_URL || "");
+    return url.protocol === "https:" && !/[<>]/.test(url.host) ? url.host : null;
+  } catch {
+    return null;
+  }
+})();
+const APP_LINKS = SITE_HOST
+  ? [
+      {
+        action: "VIEW",
+        autoVerify: true,
+        category: ["BROWSABLE", "DEFAULT"],
+        data: require("./src/lib/appLinkPaths.json").map((p) => ({
+          scheme: "https",
+          host: SITE_HOST,
+          ...p,
+        })),
+      },
+    ]
+  : [];
 
 module.exports = () => ({
   name: "LibraryHub",
@@ -25,8 +60,16 @@ module.exports = () => ({
   orientation: "portrait",
   userInterfaceStyle: "automatic", // follow the phone's light/dark setting
   icon: "./assets/icon.png",
+  // Expo account and project (from `eas init`). Builds and push notifications
+  // use them. The project id is public: it ships inside the app.
+  owner: "horror_98",
+  extra: {
+    eas: { projectId: "127ab7eb-f5a3-4085-8830-ba15cff95c31" },
+  },
   android: {
     package: process.env.ANDROID_PACKAGE || "pk.libraryhub.app",
+    ...(GOOGLE_SERVICES_FILE ? { googleServicesFile: GOOGLE_SERVICES_FILE } : {}),
+    ...(APP_LINKS.length ? { intentFilters: APP_LINKS } : {}),
     adaptiveIcon: {
       backgroundColor: BRAND,
       foregroundImage: "./assets/android-icon-foreground.png",
@@ -41,6 +84,15 @@ module.exports = () => ({
     "expo-router",
     "expo-font",
     "expo-secure-store",
+    // Push notifications (Android tray icon must be white on transparent).
+    [
+      "expo-notifications",
+      {
+        icon: "./assets/android-icon-monochrome.png",
+        color: BRAND,
+        defaultChannel: "default",
+      },
+    ],
     [
       "expo-splash-screen",
       {
@@ -51,5 +103,24 @@ module.exports = () => ({
         dark: { image: "./assets/splash-icon.png", backgroundColor: CANVAS_DARK },
       },
     ],
+    // The plugin requires iosUrlScheme; the app is Android-only for now.
+    [
+      "@react-native-google-signin/google-signin",
+      { iosUrlScheme: "com.googleusercontent.apps.android-only" },
+    ],
+    // Only when configured: the Facebook plugin fails without its ids.
+    ...(FACEBOOK_APP_ID && FACEBOOK_CLIENT_TOKEN
+      ? [
+          [
+            "react-native-fbsdk-next",
+            {
+              appID: FACEBOOK_APP_ID,
+              clientToken: FACEBOOK_CLIENT_TOKEN,
+              displayName: "LibraryHub",
+              scheme: `fb${FACEBOOK_APP_ID}`,
+            },
+          ],
+        ]
+      : []),
   ],
 });

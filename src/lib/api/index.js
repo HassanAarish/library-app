@@ -37,6 +37,10 @@ export const user = {
   setProfilePicture: (profilePicture) =>
     unwrapWithMessage(http.patch("/user/profile-picture", { profilePicture })),
   removeProfilePicture: () => unwrapWithMessage(http.delete("/user/remove-profile-picture")),
+  // → { canDelete, blockers: { reading, upcoming, unconfirmed, refunds }, credits, graceDays }
+  deletionStatus: () => unwrap(http.get("/user/deletion")),
+  // Body: { confirm: true, password?, giveUpCredits? } → { scheduledFor }
+  requestDeletion: (body) => unwrap(http.post("/user/deletion", body)),
 };
 
 export const files = {
@@ -69,6 +73,7 @@ export const rentals = {
   availability: (bookId) => unwrap(http.get(`/rental/availability/${bookId}`)),
   mine: (params) => unwrap(http.get("/rental/mine", { params: cleanParams(params) })),
   get: (rentalId) => unwrap(http.get(`/rental/${rentalId}`)),
+  cancel: (rentalId) => unwrapWithMessage(http.post(`/rental/${rentalId}/cancel`)),
   extend: (rentalId) => unwrapWithMessage(http.post(`/rental/${rentalId}/extend`)),
   returnEarly: (rentalId) => unwrapWithMessage(http.post(`/rental/${rentalId}/return`)),
   startNow: (rentalId) => unwrapWithMessage(http.post(`/rental/${rentalId}/start-now`)),
@@ -109,4 +114,7 @@ export const notifications = {
   markRead: (ids) => unwrap(http.patch("/notification/read", { ids })),
   markAllRead: () => unwrap(http.patch("/notification/read-all")),
   remove: (notificationId) => unwrap(http.delete(`/notification/${notificationId}`)),
+  // Phone push notifications (mobile app only)
+  registerDevice: (body) => unwrap(http.post("/notification/devices", body)),
+  unregisterDevice: (token) => unwrap(http.delete("/notification/devices", { data: { token } })),
 };

@@ -7,6 +7,50 @@ The version shown in the app comes from `package.json`.
 
 ## [Unreleased]
 
+### Added
+- App Links (phase M5): website links to books, requests, the reader and account
+  pages open the app when installed; payment, plan and password pages stay on the
+  website. Turned on by a real `https` `EXPO_PUBLIC_SITE_URL`.
+- Account › Settings: "Notifications on this phone" (turn on, or open the phone's
+  settings when declined) and the app version.
+- A "Something went wrong / Try again" screen when a screen crashes.
+- Delete account (phase M5): Account tab › Delete account, with what still stops it,
+  giving up unused credits and the password; signs out, and signing in within 14 days
+  keeps the account. New `Checkbox` in `@/ui`.
+- Push notifications (phase M4, part 2): the app asks for permission after sign-in,
+  registers the phone with the backend and removes it on sign-out; tapping a push
+  marks it read and opens the matching screen, including when it starts the app.
+  Needs a development build (not Expo Go). Adds `expo-notifications`: run
+  `npm install` after pulling.
+- Requests & inbox (phase M4, part 1): Requests tab with search, open/added filter,
+  most wanted or newest, follow, request a book with Open Library suggestions, suggest
+  a category, and "Mine" (my requests and suggestions); request pages with their
+  timeline; notifications inbox with an unread badge, mark read and delete.
+  Notifications open the matching app screen, and payment-related ones use the app's
+  own wording (also in the live pop-up).
+- My library & protected reader (phase M3): Library tab grouping rentals into Reading now, Upcoming and History with live countdowns, 7-day extension and early return. Full-screen page reader (/read/[bookId]) streaming watermarked pages with memory-only caching, screenshot blocking (expo-screen-capture), reading position memory, zoom and jump-to-page navigation.
+
+### Fixed
+- Screen readers now hear which option is chosen in segmented controls (library
+  tabs, All/Mine, Appearance) and whether the tick box is ticked (`aria-checked`).
+- Inbox: "book added" notifications no longer say "You can rent it now"; server text
+  that mentions paying or renting is replaced with neutral wording.
+- Reader: the next page is preloaded in memory only (it was also being saved to disk);
+  page images now get a real size; Retry reloads a failed page; each page is
+  requested once; tapping the page shows or hides the controls.
+- Library and reader no longer show payment wording (Google Play rule); a new test
+  checks the text every screen uses.
+- Reader: when a rental ends mid-book it says the reading time has ended (a brief
+  network error keeps the book open); the saved page is no longer overwritten with
+  page 1 on opening, and saved pages are cleared when a rental ends or you sign out.
+- Library: countdowns can be translated; tab labels fit on small phones.
+- Sign-in (phase M1): email and password, sign-up with an emailed code, Google,
+  Facebook (with account linking), two-step verification and forgot password.
+- Account tab shows the signed-in profile, with sign out. Guests get a Sign in button.
+- A saved session that can't reach the server offers a retry instead of signing out.
+- Catalogue (phase M2): Home shelf of new arrivals; Books tab with search, category
+  and language filters, sorting and endless scrolling; book pages with live availability.
+
 ## [0.1.0] - not yet released
 
 The app's foundation (phase M0).

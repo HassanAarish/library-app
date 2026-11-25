@@ -1,5 +1,7 @@
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { CloudOff } from "lucide-react-native";
+import { useI18n } from "@/i18n";
 import { useCSSVariable, withUniwind } from "uniwind";
 import { cn } from "./cn";
 import Text from "./Text";
@@ -99,6 +101,31 @@ export const EmptyState = ({ icon, title, description, action, onAction, classNa
       </Button>
     ) : null}
   </View>
+);
+
+/** A failed request, with a retry and the backend request id for support. */
+export const ErrorState = ({ error, onRetry, className }) => {
+  const { t } = useI18n();
+  return (
+    <EmptyState
+      icon={CloudOff}
+      title={t("errors.title")}
+      description={[
+        error?.message,
+        error?.requestId && t("errors.reference", { id: error.requestId }),
+      ]
+        .filter(Boolean)
+        .join("\n")}
+      action={onRetry ? t("common.retry") : undefined}
+      onAction={onRetry}
+      className={className}
+    />
+  );
+};
+
+/** A plain grey block standing in for content that's loading. */
+export const Skeleton = ({ className }) => (
+  <View className={cn("rounded-md bg-sunken", className)} />
 );
 
 /** Centered spinner for whole-screen loading. */

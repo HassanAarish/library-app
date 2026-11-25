@@ -1,15 +1,121 @@
-import { View } from "react-native";
-import { CircleCheck, CircleX } from "lucide-react-native";
+import { Alert, Platform, Pressable, View } from "react-native";
+import * as WebBrowser from "expo-web-browser";
+import Constants from "expo-constants";
+import { Bell, ChevronRight, CircleCheck, CircleX, LogOut, Trash2 } from "lucide-react-native";
+import { router } from "expo-router";
+import { useUnreadCount } from "@/hooks/useNotifications";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useI18n } from "@/i18n";
 import { useSocket } from "@/realtime/SocketProvider";
-import { baseURL } from "@/constants";
-import { Card, Icon, PageHeader, Screen, Segmented, Text } from "@/ui";
-import PhasePlaceholder from "@/components/PhasePlaceholder";
+import { baseURL, siteURL } from "@/constants";
+import { Avatar, Button, Card, Icon, PageHeader, Screen, Segmented, Text } from "@/ui";
 import SignInPrompt from "@/components/SignInPrompt";
+import PhoneNotifications from "@/components/PhoneNotifications";
 
-/** Account: profile and sign-out arrive in M1; settings (theme, server status) work now. */
+// The version people see (from package.json via app.config.js), for testers' reports.
+const APP_VERSION = Constants.expoConfig?.version ?? "";
+
+/** Who's signed in, and sign-out. Editing the profile stays on the website for now. */
+const ProfileCard = () => {
+  const { t } = useI18n();
+  const { user, preferences, signOut } = useAuth();
+
+  const confirmSignOut = () => {
+    if (Platform.OS === "web") return signOut(); // Alert buttons don't exist in the browser preview
+    return Alert.alert(t("mobile.account.signOutTitle"), t("mobile.account.signOutBody"), [
+      { text: t("common.cancel"), style: "cancel" },
+      { text: t("nav.signOut"), style: "destructive", onPress: signOut },
+    ]);
+  };
+
+  return (
+    <Card className="gap-4">
+      <View className="flex-row items-center gap-4">
+        <Avatar src={preferences?.profilePicture?.url} name={user?.name} size="lg" />
+        <View className="min-w-0 flex-1">
+          <Text variant="heading" numberOfLines={1}>
+            {user?.name}
+          </Text>
+          <Text variant="label" className="mt-0.5 text-fg-muted" numberOfLines={1}>
+            {user?.email}
+          </Text>
+        </View>
+      </View>
+      {siteURL ? (
+        <View className="gap-2">
+          <Text variant="caption">{t("mobile.account.preferencesOnWebsite")}</Text>
+          <Button
+            variant="secondary"
+            size="sm"
+            onPress={() => WebBrowser.openBrowserAsync(`${siteURL}/account/profile`)}
+          >
+            {t("mobile.account.openWebsite")}
+          </Button>
+        </View>
+      ) : null}
+      <Button variant="secondary" icon={LogOut} onPress={confirmSignOut}>
+        {t("nav.signOut")}
+      </Button>
+    </Card>
+  );
+};
+
+/** Opens the notifications inbox, with the unread count. */
+const InboxRow = () => {
+  const { t } = useI18n();
+  const unread = useUnreadCount();
+  return (
+    <Pressable
+      onPress={() => router.push("/notifications")}
+      accessibilityRole="button"
+      accessibilityLabel={
+        unread
+          ? `${t("inbox.title")}, ${t("notifications.unread", { count: unread })}`
+          : t("inbox.title")
+      }
+      className="mt-4 min-h-14 flex-row items-center gap-3 rounded-card border border-line bg-surface px-4"
+    >
+      <Icon as={Bell} tone="brand" />
+      <Text weight="medium" className="flex-1">
+        {t("inbox.title")}
+      </Text>
+      {unread ? (
+        <View className="min-w-6 items-center rounded-full bg-danger px-2 py-0.5">
+          <Text variant="caption" weight="semibold" className="text-white">
+            {unread > 99 ? "99+" : unread}
+          </Text>
+        </View>
+      ) : null}
+      <View className="rtl:rotate-180">
+        <Icon as={ChevronRight} tone="fg-subtle" size={18} />
+      </View>
+    </Pressable>
+  );
+};
+
+/** Opens "Delete your account" (Google Play requires it in the app). */
+const DeleteAccountRow = () => {
+  const { t } = useI18n();
+  return (
+    <Pressable
+      onPress={() => router.push("/account/delete")}
+      accessibilityRole="button"
+      accessibilityLabel={t("mobile.account.deleteRow")}
+      className="min-h-12 flex-row items-center gap-3 px-1"
+    >
+      <Icon as={Trash2} tone="danger" size={18} />
+      <Text weight="medium" className="flex-1 text-danger">
+        {t("mobile.account.deleteRow")}
+      </Text>
+      <View className="rtl:rotate-180">
+        <Icon as={ChevronRight} tone="fg-subtle" size={18} />
+      </View>
+    </Pressable>
+  );
+};
+
+/** Account: the signed-in profile or a sign-in prompt, then settings. */
 export default function AccountScreen() {
   const { t } = useI18n();
   const { isAuthenticated } = useAuth();
@@ -20,7 +126,10 @@ export default function AccountScreen() {
     <Screen>
       <PageHeader title={t("nav.account")} />
       {isAuthenticated ? (
-        <PhasePlaceholder phase="M1" title={t("nav.profile")} />
+        <>
+          <ProfileCard />
+          <InboxRow />
+        </>
       ) : (
         <SignInPrompt />
       )}
@@ -62,7 +171,13 @@ export default function AccountScreen() {
             </Text>
           </View>
         </View>
+        {isAuthenticated ? <PhoneNotifications /> : null}
       </Card>
+
+      {isAuthenticated ? <DeleteAccountRow /> : null}
+      <Text variant="caption" className="mt-6 text-center" selectable>
+        {t("mobile.settings.version", { version: APP_VERSION })}
+      </Text>
     </Screen>
   );
 }

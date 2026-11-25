@@ -3,6 +3,7 @@ import { BookOpen, Home, Library, MessageSquarePlus, UserRound } from "lucide-re
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCSSVariable } from "uniwind";
 import { useI18n } from "@/i18n";
+import { useUnreadCount } from "@/hooks/useNotifications";
 
 /** Bottom tabs: Home · Books · Library · Requests · Account. */
 export default function TabsLayout() {
@@ -15,12 +16,18 @@ export default function TabsLayout() {
     "--color-fg-subtle",
   ]);
 
-  const tab = (name, title, Glyph) => (
+  const unread = useUnreadCount();
+
+  const tab = (name, title, Glyph, badge) => (
     <Tabs.Screen
       name={name}
       options={{
         title,
         tabBarIcon: ({ color, size }) => <Glyph color={color} size={size} />,
+        tabBarBadge: badge || undefined,
+        tabBarAccessibilityLabel: badge
+          ? `${title}, ${t("notifications.unread", { count: badge })}`
+          : undefined,
       }}
     />
   );
@@ -46,7 +53,7 @@ export default function TabsLayout() {
       {tab("books", t("mobile.tabs.books"), BookOpen)}
       {tab("library", t("mobile.tabs.library"), Library)}
       {tab("requests", t("mobile.tabs.requests"), MessageSquarePlus)}
-      {tab("account", t("mobile.tabs.account"), UserRound)}
+      {tab("account", t("mobile.tabs.account"), UserRound, unread > 99 ? "99+" : unread)}
     </Tabs>
   );
 }
