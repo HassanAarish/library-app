@@ -8,6 +8,9 @@ The version shown in the app comes from `package.json`.
 ## [Unreleased]
 
 ### Changed
+- Expo SDK 58 patch updates (`npx expo install --fix`): expo 58.0.26, expo-router,
+  expo-notifications, expo-web-browser 58.1.0 and others; `expo-status-bar` and
+  `expo-web-browser` listed as config plugins. Run `npm install` after pulling.
 - `i18n/locales/en.js` kept in step with the website: "Not adding" request filter,
   "1 book" / "N books" in the catalogue, the two-step setup key, and the password
   note now says changing it signs you out everywhere.

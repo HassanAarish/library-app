@@ -84,6 +84,8 @@ module.exports = () => ({
     "expo-router",
     "expo-font",
     "expo-secure-store",
+    "expo-status-bar",
+    "expo-web-browser",
     // Push notifications (Android tray icon must be white on transparent).
     [
       "expo-notifications",
