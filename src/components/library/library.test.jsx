@@ -7,6 +7,10 @@ import { countdownText, useCountdown } from "@/hooks/useCountdown";
 import LibraryScreen from "@/app/(tabs)/library";
 import ReaderScreen from "@/app/read/[bookId]";
 
+// The first test here pays for loading the library and reader screens; on a busy
+// laptop that can pass Jest's 5-second default during a full run.
+jest.setTimeout(20000);
+
 let mockAuth = { status: "authenticated", isAuthenticated: true, user: { _id: "u1" } };
 const mockShow = jest.fn();
 
